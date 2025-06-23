@@ -11,5 +11,5 @@ AssetOrigin:
   packageName: Starter Assets - ThirdPerson | Updates in new CharacterController
     package
   packageVersion: 1.1.5
-  assetPath: Assets/Scene2/ThirdPersonController/Prefabs/NestedParentCapsule_Unpack.prefab
+  assetPath: Assets/Scene2/StarterAssets/ThirdPersonController/Prefabs/NestedParentCapsule_Unpack.prefab
   uploadId: 691128

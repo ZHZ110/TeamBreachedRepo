@@ -1,4 +1,4 @@
-﻿ using UnityEngine;
+﻿using UnityEngine;
 #if ENABLE_INPUT_SYSTEM 
 using UnityEngine.InputSystem;
 #endif
@@ -75,6 +75,23 @@ namespace StarterAssets
         [Tooltip("For locking the camera position on all axis")]
         public bool LockCameraPosition = false;
 
+        [Header("Floating Movement")]
+        [Tooltip("Enable floating movement (disables gravity)")]
+        public bool FloatingMode = false;
+
+        [Tooltip("Distance to move up/down with each key press")]
+        public float VerticalStepDistance = 1.0f;
+
+        [Tooltip("Speed of the smooth up/down movement")]
+        public float VerticalMoveSpeed = 5.0f;
+
+        [Tooltip("Minimum Y position (prevents going below floor)")]
+        public float MinimumYPosition = 0.0f;
+
+        // Private variables for smooth vertical movement
+        private Vector3 _targetVerticalPosition;
+        private bool _isMovingVertically = false;
+
         // cinemachine
         private float _cinemachineTargetYaw;
         private float _cinemachineTargetPitch;
@@ -107,7 +124,6 @@ namespace StarterAssets
         private GameObject _mainCamera;
 
         private const float _threshold = 0.01f;
-
         private bool _hasAnimator;
 
         private bool IsCurrentDeviceMouse
@@ -117,11 +133,10 @@ namespace StarterAssets
 #if ENABLE_INPUT_SYSTEM
                 return _playerInput.currentControlScheme == "KeyboardMouse";
 #else
-				return false;
+                return false;
 #endif
             }
         }
-
 
         private void Awake()
         {
@@ -135,14 +150,14 @@ namespace StarterAssets
         private void Start()
         {
             _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
-            
+
             _hasAnimator = TryGetComponent(out _animator);
             _controller = GetComponent<CharacterController>();
             _input = GetComponent<StarterAssetsInputs>();
-#if ENABLE_INPUT_SYSTEM 
+#if ENABLE_INPUT_SYSTEM
             _playerInput = GetComponent<PlayerInput>();
 #else
-			Debug.LogError( "Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
+            Debug.LogError("Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
 #endif
 
             AssignAnimationIDs();
@@ -150,15 +165,27 @@ namespace StarterAssets
             // reset our timeouts on start
             _jumpTimeoutDelta = JumpTimeout;
             _fallTimeoutDelta = FallTimeout;
+
+            // Initialize target position for floating movement
+            _targetVerticalPosition = transform.position;
         }
 
         private void Update()
         {
             _hasAnimator = TryGetComponent(out _animator);
 
-            JumpAndGravity();
-            GroundedCheck();
-            Move();
+            if (FloatingMode)
+            {
+                // In floating mode, only handle movement and camera, skip gravity and grounded checks
+                Move();
+            }
+            else
+            {
+                // Normal mode - run all systems
+                JumpAndGravity();
+                GroundedCheck();
+                Move();
+            }
         }
 
         private void LateUpdate()
@@ -206,9 +233,6 @@ namespace StarterAssets
             // set target speed based on move speed, sprint speed and if sprint is pressed
             float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
 
-            // a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
-
-            // note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
             // if there is no input, set the target speed to 0
             if (_input.move == Vector2.zero) targetSpeed = 0.0f;
 
@@ -223,7 +247,6 @@ namespace StarterAssets
                 currentHorizontalSpeed > targetSpeed + speedOffset)
             {
                 // creates curved result rather than a linear one giving a more organic speed change
-                // note T in Lerp is clamped, so we don't need to clamp our speed
                 _speed = Mathf.Lerp(currentHorizontalSpeed, targetSpeed * inputMagnitude,
                     Time.deltaTime * SpeedChangeRate);
 
@@ -241,7 +264,6 @@ namespace StarterAssets
             // normalise input direction
             Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
 
-            // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
             // if there is a move input rotate player when the player is moving
             if (_input.move != Vector2.zero)
             {
@@ -254,12 +276,40 @@ namespace StarterAssets
                 transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
             }
 
-
             Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
 
-            // move the player
-            _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
-                             new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+            if (FloatingMode)
+            {
+                // Handle vertical movement to get the vertical velocity
+                float verticalMovement = HandleFloatingVerticalMovement();
+
+                // Create combined movement vector
+                Vector3 horizontalMovement = targetDirection.normalized * (_speed * Time.deltaTime);
+                Vector3 combinedMovement = new Vector3(horizontalMovement.x, verticalMovement, horizontalMovement.z);
+
+                // Apply combined movement in a single call
+                CollisionFlags collisionFlags = _controller.Move(combinedMovement);
+
+                // Check for ceiling collision and stop vertical movement if needed
+                if (collisionFlags == CollisionFlags.Above && verticalMovement > 0)
+                {
+                    _isMovingVertically = false;
+                    Debug.Log("Hit ceiling, stopping upward movement");
+                }
+
+                _verticalVelocity = 0f;
+            }
+            else
+            {
+                // Normal mode - use CharacterController with gravity
+                if (_verticalVelocity < _terminalVelocity)
+                {
+                    _verticalVelocity += Gravity * Time.deltaTime;
+                }
+
+                _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
+                                 new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+            }
 
             // update animator if using character
             if (_hasAnimator)
@@ -269,40 +319,96 @@ namespace StarterAssets
             }
         }
 
+        private float HandleFloatingVerticalMovement()
+        {
+            // Use Input System Keyboard directly for reliable key detection
+            bool floatUpPressed = false;
+            bool floatDownPressed = false;
+
+            if (Keyboard.current != null)
+            {
+                floatUpPressed = Keyboard.current.eKey.wasPressedThisFrame;
+                floatDownPressed = Keyboard.current.qKey.wasPressedThisFrame;
+            }
+
+            // Set new target position when keys are pressed
+            if (floatUpPressed && !_isMovingVertically)
+            {
+                _targetVerticalPosition = new Vector3(transform.position.x, transform.position.y + VerticalStepDistance, transform.position.z);
+                _isMovingVertically = true;
+            }
+            else if (floatDownPressed && !_isMovingVertically)
+            {
+                // Check if moving down would go below minimum Y position
+                float newY = transform.position.y - VerticalStepDistance;
+                if (newY >= MinimumYPosition)
+                {
+                    _targetVerticalPosition = new Vector3(transform.position.x, newY, transform.position.z);
+                }
+                else
+                {
+                    // Target the minimum Y position instead
+                    _targetVerticalPosition = new Vector3(transform.position.x, MinimumYPosition, transform.position.z);
+                }
+                _isMovingVertically = true;
+            }
+
+            // Calculate vertical movement delta
+            float verticalMovementDelta = 0f;
+
+            if (_isMovingVertically)
+            {
+                float distanceToTarget = Mathf.Abs(_targetVerticalPosition.y - transform.position.y);
+
+                if (distanceToTarget > 0.05f) // Still moving towards target
+                {
+                    float direction = Mathf.Sign(_targetVerticalPosition.y - transform.position.y);
+                    verticalMovementDelta = direction * VerticalMoveSpeed * Time.deltaTime;
+
+                    // Prevent overshooting the target
+                    if (Mathf.Abs(verticalMovementDelta) > distanceToTarget)
+                    {
+                        verticalMovementDelta = direction * distanceToTarget;
+                        _isMovingVertically = false; // We've reached the target
+                    }
+                }
+                else // Close enough to target, snap and stop
+                {
+                    verticalMovementDelta = _targetVerticalPosition.y - transform.position.y;
+                    _isMovingVertically = false;
+                }
+            }
+
+            return verticalMovementDelta;
+        }
+
         private void JumpAndGravity()
         {
             if (Grounded)
             {
-                // reset the fall timeout timer
                 _fallTimeoutDelta = FallTimeout;
 
-                // update animator if using character
                 if (_hasAnimator)
                 {
                     _animator.SetBool(_animIDJump, false);
                     _animator.SetBool(_animIDFreeFall, false);
                 }
 
-                // stop our velocity dropping infinitely when grounded
                 if (_verticalVelocity < 0.0f)
                 {
                     _verticalVelocity = -2f;
                 }
 
-                // Jump
                 if (_input.jump && _jumpTimeoutDelta <= 0.0f)
                 {
-                    // the square root of H * -2 * G = how much velocity needed to reach desired height
                     _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
 
-                    // update animator if using character
                     if (_hasAnimator)
                     {
                         _animator.SetBool(_animIDJump, true);
                     }
                 }
 
-                // jump timeout
                 if (_jumpTimeoutDelta >= 0.0f)
                 {
                     _jumpTimeoutDelta -= Time.deltaTime;
@@ -310,28 +416,23 @@ namespace StarterAssets
             }
             else
             {
-                // reset the jump timeout timer
                 _jumpTimeoutDelta = JumpTimeout;
 
-                // fall timeout
                 if (_fallTimeoutDelta >= 0.0f)
                 {
                     _fallTimeoutDelta -= Time.deltaTime;
                 }
                 else
                 {
-                    // update animator if using character
                     if (_hasAnimator)
                     {
                         _animator.SetBool(_animIDFreeFall, true);
                     }
                 }
 
-                // if we are not grounded, do not jump
                 _input.jump = false;
             }
 
-            // apply gravity over time if under terminal (multiply by delta time twice to linearly speed up over time)
             if (_verticalVelocity < _terminalVelocity)
             {
                 _verticalVelocity += Gravity * Time.deltaTime;

@@ -12,5 +12,5 @@ AssetOrigin:
   packageName: Starter Assets - ThirdPerson | Updates in new CharacterController
     package
   packageVersion: 1.1.5
-  assetPath: Assets/Scene2/ThirdPersonController/Scenes/PlaygroundSettings.lighting
+  assetPath: Assets/Scene2/StarterAssets/ThirdPersonController/Scenes/PlaygroundSettings.lighting
   uploadId: 691128

@@ -12,8 +12,10 @@ namespace StarterAssets
 		public Vector2 look;
 		public bool jump;
 		public bool sprint;
+        public bool floatUp;
+        public bool floatDown;
 
-		[Header("Movement Settings")]
+        [Header("Movement Settings")]
 		public bool analogMovement;
 
 		[Header("Mouse Cursor Settings")]
@@ -75,6 +77,26 @@ namespace StarterAssets
 		{
 			Cursor.lockState = newState ? CursorLockMode.Locked : CursorLockMode.None;
 		}
-	}
+
+        public void OnFloatUp(InputValue value)
+        {
+            FloatUpInput(value.isPressed);
+        }
+
+        public void OnFloatDown(InputValue value)
+        {
+            FloatDownInput(value.isPressed);
+        }
+
+        public void FloatUpInput(bool newFloatUpState)
+        {
+            floatUp = newFloatUpState;
+        }
+
+        public void FloatDownInput(bool newFloatDownState)
+        {
+            floatDown = newFloatDownState;
+        }
+    }
 	
 }
