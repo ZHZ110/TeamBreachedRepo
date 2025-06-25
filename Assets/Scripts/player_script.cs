@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -5,8 +6,18 @@ public class Player : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 1.0f;
 
+    public event EventHandler<OnStaminaChangedEventArgs> onStaminaChanged;
+    public class OnStaminaChangedEventArgs: EventArgs
+    {
+        public float staminaNormalized;
+    }
+
     private bool s_pressed;
     private bool w_pressed;
+    private int stamina = 1000;
+    private int STAMINA_MAX = 1000;
+    private float temperature = 0;
+    private float TEMPERATURE_MAX = 30;
     private void Update()
     {
         Vector2 inputVector = new Vector2(0, 0);
@@ -21,6 +32,10 @@ public class Player : MonoBehaviour
             //Debug.Log("Wiggping Tail!");
             w_pressed = true;
             inputVector.x = -0.5f;
+            stamina = stamina - 1;
+            onStaminaChanged?.Invoke(this, new OnStaminaChangedEventArgs{
+                staminaNormalized = (float)stamina / STAMINA_MAX
+            });
         }
         else
         {
@@ -29,6 +44,12 @@ public class Player : MonoBehaviour
         if (Input.GetKey(KeyCode.S))
         {
             s_pressed = true;
+            --temperature;
+            --stamina;
+            onStaminaChanged?.Invoke(this, new OnStaminaChangedEventArgs
+            {
+                staminaNormalized = (float)stamina / STAMINA_MAX
+            });
             //Debug.Log("Splashing water with tail!");
         }
         else
@@ -44,6 +65,8 @@ public class Player : MonoBehaviour
             transform.forward = Vector3.Slerp(transform.forward, rotateDir, Time.deltaTime * rotateSpeed);
         }
         transform.position += moveDir * moveSpeed* Time.deltaTime;
+        temperature += 0.01f;
+
         Debug.Log(transform.position);
     }
 
@@ -55,5 +78,15 @@ public class Player : MonoBehaviour
     public bool W_pressed()
     {
         return w_pressed;
+    }
+
+    public int GetStamina()
+    {
+        return stamina;
+    }
+
+    public float GetTemperature()
+    {
+        return temperature;
     }
 }
