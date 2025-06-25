@@ -29,7 +29,7 @@ public class PushableRock : MonoBehaviour
         rb.freezeRotation = true;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
 
-        Debug.Log($"Rock {gameObject.name} initialized as kinematic at position {transform.position}");
+       // Debug.Log($"Rock {gameObject.name} initialized as kinematic at position {transform.position}");
     }
 
     void Update()
@@ -42,7 +42,7 @@ public class PushableRock : MonoBehaviour
             if (Physics.Raycast(rayStart, pushDirection, raycastDistance, wallLayerMask))
             {
                 // Hit a wall, stop pushing
-                Debug.Log("Rock hit wall, stopping");
+               // Debug.Log("Rock hit wall, stopping");
                 StopPushing();
                 return;
             }
@@ -56,7 +56,7 @@ public class PushableRock : MonoBehaviour
             Vector3 newPosition = Vector3.MoveTowards(transform.position, targetPosition, pushSpeed * Time.deltaTime);
             transform.position = newPosition;
 
-            Debug.Log($"Rock moving: {progress:P1} complete, distance remaining: {distanceToTarget:F2}");
+            //Debug.Log($"Rock moving: {progress:P1} complete, distance remaining: {distanceToTarget:F2}");
 
             // Check if we've reached the target
             if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
@@ -64,7 +64,7 @@ public class PushableRock : MonoBehaviour
                 // Snap to grid position and stop
                 transform.position = targetPosition;
                 isMoving = false;
-                Debug.Log($"Rock reached target position: {targetPosition}");
+              //  Debug.Log($"Rock reached target position: {targetPosition}");
             }
         }
     }
@@ -74,7 +74,7 @@ public class PushableRock : MonoBehaviour
         // Only allow pushing if not already moving
         if (isMoving)
         {
-            Debug.Log("Rock is already moving, cannot push");
+            //Debug.Log("Rock is already moving, cannot push");
             return;
         }
 
@@ -82,7 +82,7 @@ public class PushableRock : MonoBehaviour
         Vector3 toPusher = (pusher.position - transform.position).normalized;
         float alignment = Vector3.Dot(toPusher, -direction);
 
-        Debug.Log($"Push attempt: direction={direction}, alignment={alignment}, pusher pos={pusher.position}, rock pos={transform.position}");
+        //Debug.Log($"Push attempt: direction={direction}, alignment={alignment}, pusher pos={pusher.position}, rock pos={transform.position}");
 
         if (alignment > 0.2f) // More lenient alignment check
         {
@@ -95,14 +95,14 @@ public class PushableRock : MonoBehaviour
             targetPosition = transform.position + direction * cellSize;
             isMoving = true;
 
-            Debug.Log($"Rock authorized to move from {startPosition} to {targetPosition} by {pusher.name}");
-            Debug.Log($"Movement distance: {Vector3.Distance(startPosition, targetPosition)} units");
-            Debug.Log($"Push speed: {pushSpeed} units/second");
-            Debug.Log($"Estimated time: {Vector3.Distance(startPosition, targetPosition) / pushSpeed} seconds");
+            //Debug.Log($"Rock authorized to move from {startPosition} to {targetPosition} by {pusher.name}");
+            //Debug.Log($"Movement distance: {Vector3.Distance(startPosition, targetPosition)} units");
+            //Debug.Log($"Push speed: {pushSpeed} units/second");
+            //Debug.Log($"Estimated time: {Vector3.Distance(startPosition, targetPosition) / pushSpeed} seconds");
         }
         else
         {
-            Debug.Log($"Push denied - bad alignment: {alignment} (need > 0.2)");
+            //Debug.Log($"Push denied - bad alignment: {alignment} (need > 0.2)");
         }
     }
 
@@ -111,7 +111,7 @@ public class PushableRock : MonoBehaviour
         isBeingPushed = false;
         isMoving = false;
         authorizedPusher = null;
-        Debug.Log($"Rock pushing stopped at position: {transform.position}");
+        //Debug.Log($"Rock pushing stopped at position: {transform.position}");
     }
 
     public bool IsMoving()
@@ -154,6 +154,6 @@ public class PushableRock : MonoBehaviour
     // Log any collision attempts for debugging
     void OnCollisionEnter(Collision collision)
     {
-        Debug.Log($"Rock collision with {collision.gameObject.name} - Authorized pusher: {(authorizedPusher != null ? authorizedPusher.name : "None")}");
+       // Debug.Log($"Rock collision with {collision.gameObject.name} - Authorized pusher: {(authorizedPusher != null ? authorizedPusher.name : "None")}");
     }
 }

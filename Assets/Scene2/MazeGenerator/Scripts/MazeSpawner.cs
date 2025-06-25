@@ -93,14 +93,13 @@ public class MazeSpawner : MonoBehaviour
                     tmp.transform.parent = transform;
                     tmp.layer = LayerMask.NameToLayer("Wall"); // Add this line
                 }
-
-                // Spawn goal
-                if (cell.IsGoal && GoalPrefab != null)
-                {
-                    tmp = Instantiate(GoalPrefab, new Vector3(x, 1, z), Quaternion.Euler(0, 0, 0)) as GameObject;
-                    tmp.transform.parent = transform;
-                }
             }
+        }
+
+        // Spawn single goal in center of end room
+        if (GoalPrefab != null)
+        {
+            SpawnGoalInEndRoomCenter();
         }
 
         // Second pass: spawn rocks in alcoves (priority)
@@ -114,6 +113,65 @@ public class MazeSpawner : MonoBehaviour
         {
             SpawnWaterfallsInDoorways();
         }
+    }
+
+    [Header("Cutscene Settings")]
+    public string nextSceneName = "NextLevel"; // Name of the scene to load after cutscene
+    public float triggerRadius = 2f; // Size of the trigger area
+    public float coinRiseHeight = 10f; // How high the coin rises
+    public float cutsceneDuration = 3f; // Duration of the cutscene animation
+    public AudioClip coinRiseSound; // Optional sound effect for cutscene
+
+    void SpawnGoalInEndRoomCenter()
+    {
+        // Calculate end room boundaries (top-right 3x3)
+        int startRoomSize = 3;
+        int endRoomStartRow = Rows - startRoomSize;
+        int endRoomStartCol = Columns - startRoomSize;
+
+        // Calculate center of end room
+        int centerRow = endRoomStartRow + (startRoomSize / 2); // This will be endRoomStartRow + 1
+        int centerCol = endRoomStartCol + (startRoomSize / 2); // This will be endRoomStartCol + 1
+
+        // Convert to world position
+        float x = centerCol * (CellWidth + (AddGaps ? .2f : 0));
+        float z = centerRow * (CellHeight + (AddGaps ? .2f : 0));
+
+        // Spawn goal at center of end room
+        GameObject goal = Instantiate(GoalPrefab, new Vector3(x, 1, z), Quaternion.Euler(0, 0, 0)) as GameObject;
+        goal.transform.parent = transform;
+        // No need to set tag since we pass direct reference to the cutscene script
+
+        // Create cutscene trigger GameObject
+        GameObject triggerObject = new GameObject("EndRoomCutsceneTrigger");
+        triggerObject.transform.position = new Vector3(x, 0.5f, z); // Slightly above ground
+        triggerObject.transform.parent = transform;
+
+        // Add the cutscene trigger script
+        EndRoomTrigger cutsceneScript = triggerObject.AddComponent<EndRoomTrigger>();
+
+        // Configure the cutscene script
+        cutsceneScript.coin = goal;
+        cutsceneScript.nextSceneName = nextSceneName;
+        cutsceneScript.coinRiseHeight = coinRiseHeight;
+        cutsceneScript.animationDuration = cutsceneDuration;
+
+        // Add audio source if we have a sound clip
+        if (coinRiseSound != null)
+        {
+            AudioSource audioSource = triggerObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            cutsceneScript.audioSource = audioSource;
+            cutsceneScript.coinRiseSound = coinRiseSound;
+        }
+
+        // Add and configure the trigger collider
+        SphereCollider triggerCollider = triggerObject.AddComponent<SphereCollider>();
+        triggerCollider.isTrigger = true;
+        triggerCollider.radius = triggerRadius;
+
+       //Debug.Log($"Goal and cutscene trigger spawned at end room center: row {centerRow}, column {centerCol}, world position ({x}, 1, {z})");
+       //Debug.Log($"Cutscene will trigger when player enters {triggerRadius} unit radius around the goal");
     }
 
     void SpawnWaterfallsInDoorways()
@@ -285,6 +343,9 @@ public class MazeSpawner : MonoBehaviour
         return false;
     }
 
+    // ... (rest of your existing methods remain unchanged)
+    // I'm including the full methods here for completeness but they stay the same
+
     void SpawnRocksInAlcoves()
     {
         // Define start and end room boundaries
@@ -323,34 +384,34 @@ public class MazeSpawner : MonoBehaviour
             }
         }
 
-        Debug.Log($"Total potential rock positions found: {potentialPositions.Count}");
+       //Debug.Log($"Total potential rock positions found: {potentialPositions.Count}");
 
         // After the "Total potential rock positions found" debug line, add:
 
         // Now try to spawn rocks from the shuffled list
         int rocksSpawned2 = 0;
         int maxRocks2 = Mathf.Max(1, (Rows * Columns) / 50); // Limit based on maze size
-        Debug.Log($"Max rocks allowed: {maxRocks2}");
-        Debug.Log($"Rock spawn chance: {RockSpawnChance}");
+       //Debug.Log($"Max rocks allowed: {maxRocks2}");
+       //Debug.Log($"Rock spawn chance: {RockSpawnChance}");
 
         foreach (Vector2Int rockSpawnPos in potentialPositions)
         {
             // Stop if we've spawned enough rocks
             if (rocksSpawned2 >= maxRocks2)
             {
-                Debug.Log($"Reached max rocks limit: {maxRocks2}");
+               //Debug.Log($"Reached max rocks limit: {maxRocks2}");
                 break;
             }
 
             // Check if position is too close to existing rocks
             if (IsTooCloseToExistingRock(rockSpawnPos))
             {
-                Debug.Log($"Position ({rockSpawnPos.x}, {rockSpawnPos.y}) too close to existing rock");
+               //Debug.Log($"Position ({rockSpawnPos.x}, {rockSpawnPos.y}) too close to existing rock");
                 continue;
             }
 
             float randomValue = Random.Range(0f, 1f);
-            Debug.Log($"Position ({rockSpawnPos.x}, {rockSpawnPos.y}) - Random: {randomValue}, Spawn chance: {RockSpawnChance}");
+           //Debug.Log($"Position ({rockSpawnPos.x}, {rockSpawnPos.y}) - Random: {randomValue}, Spawn chance: {RockSpawnChance}");
 
             if (randomValue < RockSpawnChance)
             {
@@ -358,7 +419,7 @@ public class MazeSpawner : MonoBehaviour
                 float z = rockSpawnPos.x * (CellHeight + (AddGaps ? .2f : 0));
                 Vector3 rockPos = new Vector3(x, RockHeight, z);
 
-                Debug.Log($"Spawning rock at world position: {rockPos}");
+               //Debug.Log($"Spawning rock at world position: {rockPos}");
 
                 GameObject rock = Instantiate(RockPrefab, rockPos, Quaternion.identity) as GameObject;
                 rock.transform.parent = transform;
@@ -370,11 +431,11 @@ public class MazeSpawner : MonoBehaviour
                 occupiedPositions.Add(rockSpawnPos);
                 rocksSpawned2++;
 
-                Debug.Log($"Rock {rocksSpawned2} spawned successfully");
+               //Debug.Log($"Rock {rocksSpawned2} spawned successfully");
             }
         }
 
-        Debug.Log($"Total rocks actually spawned: {rocksSpawned2}");
+       //Debug.Log($"Total rocks actually spawned: {rocksSpawned2}");
 
 
         // Shuffle the list to randomize spawn order
@@ -452,7 +513,7 @@ public class MazeSpawner : MonoBehaviour
         rock.layer = LayerMask.NameToLayer("Rock");
         if (rock.layer == -1)
         {
-            Debug.LogWarning("Rock layer not found. Please create a 'Rock' layer in your project's Layer settings.");
+           //Debug.LogWarning("Rock layer not found. Please create a 'Rock' layer in your project's Layer settings.");
             rock.layer = 0; // Default layer
         }
 
@@ -761,11 +822,11 @@ public class MazeSpawner : MonoBehaviour
             MazeCell xCell = mMazeGenerator.GetMazeCell(row, column + 1); // X position (right of rock)
 
             // Debug logging
-            Debug.Log($"Checking Vertical Pattern 1 at ({row},{column}):");
-            Debug.Log($"Rock: Front={rockCell.WallFront}, Back={rockCell.WallBack}, Left={rockCell.WallLeft}, Right={rockCell.WallRight}");
-            Debug.Log($"Alcove: Front={alcoveCell.WallFront}, Back={alcoveCell.WallBack}, Left={alcoveCell.WallLeft}, Right={alcoveCell.WallRight}");
-            Debug.Log($"Player: Front={playerCell.WallFront}, Back={playerCell.WallBack}, Left={playerCell.WallLeft}, Right={playerCell.WallRight}");
-            Debug.Log($"X: Front={xCell.WallFront}, Back={xCell.WallBack}, Left={xCell.WallLeft}, Right={xCell.WallRight}");
+           //Debug.Log($"Checking Vertical Pattern 1 at ({row},{column}):");
+           //Debug.Log($"Rock: Front={rockCell.WallFront}, Back={rockCell.WallBack}, Left={rockCell.WallLeft}, Right={rockCell.WallRight}");
+           //Debug.Log($"Alcove: Front={alcoveCell.WallFront}, Back={alcoveCell.WallBack}, Left={alcoveCell.WallLeft}, Right={alcoveCell.WallRight}");
+           //Debug.Log($"Player: Front={playerCell.WallFront}, Back={playerCell.WallBack}, Left={playerCell.WallLeft}, Right={playerCell.WallRight}");
+           //Debug.Log($"X: Front={xCell.WallFront}, Back={xCell.WallBack}, Left={xCell.WallLeft}, Right={xCell.WallRight}");
 
             // Key validation: Player should NOT be able to reach X directly
             // Check if player can reach X without going through rock
@@ -773,7 +834,7 @@ public class MazeSpawner : MonoBehaviour
 
             if (playerCanReachXDirectly)
             {
-                Debug.Log("REJECTED: Player can reach X directly without pushing rock");
+               //Debug.Log("REJECTED: Player can reach X directly without pushing rock");
                 return false;
             }
 
@@ -793,14 +854,14 @@ public class MazeSpawner : MonoBehaviour
             bool playerAccessible = !playerCell.WallBack; // Player can reach rock
             bool xHasLimitedAccess = xCell.WallLeft; // X is blocked from rock side
 
-            Debug.Log($"Conditions: rockAccessible={rockAccessibleFromPlayer}, canEnterAlcove={rockCanEnterAlcove}, blocksX={rockBlocksX}, alcoveDeadEnd={alcoveIsDeadEnd}, alcoveOpen={alcoveOpenToRock}, playerAccess={playerAccessible}, xLimited={xHasLimitedAccess}");
+           //Debug.Log($"Conditions: rockAccessible={rockAccessibleFromPlayer}, canEnterAlcove={rockCanEnterAlcove}, blocksX={rockBlocksX}, alcoveDeadEnd={alcoveIsDeadEnd}, alcoveOpen={alcoveOpenToRock}, playerAccess={playerAccessible}, xLimited={xHasLimitedAccess}");
 
             bool isValid = rockAccessibleFromPlayer && rockCanEnterAlcove && rockBlocksX &&
                           alcoveIsDeadEnd && alcoveOpenToRock && playerAccessible && xHasLimitedAccess;
 
             if (isValid)
             {
-                Debug.Log("ACCEPTED: Valid rock puzzle pattern found!");
+               //Debug.Log("ACCEPTED: Valid rock puzzle pattern found!");
             }
 
             return isValid;

@@ -375,13 +375,18 @@ MonoBehaviour:
   CellWidth: 10
   CellHeight: 10
   AddGaps: 0
-  GoalPrefab: {fileID: 159624, guid: 850205124263c924ea0aa82f0fdf2673, type: 3}
+  GoalPrefab: {fileID: 3942978291058208336, guid: f36536b56154a1a449a46bd4b0fed4b2, type: 3}
   GeyserPrefab: {fileID: 7117458108432597929, guid: dc0a413a4e2c11048adeb4c9bafd7417, type: 3}
   GeyserSpawnChance: 0
   GeyserHeight: 1
   RockPrefab: {fileID: 3025869331567675355, guid: 60f43f47fd5259d40a3546a118374379, type: 3}
   RockSpawnChance: 1
   RockHeight: 2.5
+  nextSceneName: SampleScene
+  triggerRadius: 2
+  coinRiseHeight: 10
+  cutsceneDuration: 3
+  coinRiseSound: {fileID: 0}
 --- !u!1001 &1169472596
 PrefabInstance:
   m_ObjectHideFlags: 0
