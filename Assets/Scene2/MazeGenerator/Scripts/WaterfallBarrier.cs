@@ -5,8 +5,6 @@ using StarterAssets;
 public class WaterfallBarrier : MonoBehaviour
 {
     [Header("Barrier Settings")]
-    [SerializeField] private float knockback_force = 25f; // Increased force
-    [SerializeField] private float bounce_height = 5f; // Upward force component
     [SerializeField] private float bounce_cooldown = 1.0f; // Increased cooldown to prevent rapid re-entry
 
     [Header("Visual Effects")]

@@ -73,21 +73,25 @@ public class MazeSpawner : MonoBehaviour
                 {
                     tmp = Instantiate(Wall, new Vector3(x + CellWidth / 2, 0, z) + Wall.transform.position, Quaternion.Euler(0, 90, 0)) as GameObject;// right
                     tmp.transform.parent = transform;
+                    tmp.layer = LayerMask.NameToLayer("Wall"); // Add this line
                 }
                 if (cell.WallFront)
                 {
                     tmp = Instantiate(Wall, new Vector3(x, 0, z + CellHeight / 2) + Wall.transform.position, Quaternion.Euler(0, 0, 0)) as GameObject;// front
                     tmp.transform.parent = transform;
+                    tmp.layer = LayerMask.NameToLayer("Wall"); // Add this line
                 }
                 if (cell.WallLeft)
                 {
                     tmp = Instantiate(Wall, new Vector3(x - CellWidth / 2, 0, z) + Wall.transform.position, Quaternion.Euler(0, 270, 0)) as GameObject;// left
                     tmp.transform.parent = transform;
+                    tmp.layer = LayerMask.NameToLayer("Wall"); // Add this line
                 }
                 if (cell.WallBack)
                 {
                     tmp = Instantiate(Wall, new Vector3(x, 0, z - CellHeight / 2) + Wall.transform.position, Quaternion.Euler(0, 180, 0)) as GameObject;// back
                     tmp.transform.parent = transform;
+                    tmp.layer = LayerMask.NameToLayer("Wall"); // Add this line
                 }
 
                 // Spawn goal
@@ -314,9 +318,64 @@ public class MazeSpawner : MonoBehaviour
                 if (rockSpawnPos.x != -1 && rockSpawnPos.y != -1)
                 {
                     potentialPositions.Add(rockSpawnPos);
+                    //Debug.Log($"Found potential rock position at ({rockSpawnPos.x}, {rockSpawnPos.y})");
                 }
             }
         }
+
+        Debug.Log($"Total potential rock positions found: {potentialPositions.Count}");
+
+        // After the "Total potential rock positions found" debug line, add:
+
+        // Now try to spawn rocks from the shuffled list
+        int rocksSpawned2 = 0;
+        int maxRocks2 = Mathf.Max(1, (Rows * Columns) / 50); // Limit based on maze size
+        Debug.Log($"Max rocks allowed: {maxRocks2}");
+        Debug.Log($"Rock spawn chance: {RockSpawnChance}");
+
+        foreach (Vector2Int rockSpawnPos in potentialPositions)
+        {
+            // Stop if we've spawned enough rocks
+            if (rocksSpawned2 >= maxRocks2)
+            {
+                Debug.Log($"Reached max rocks limit: {maxRocks2}");
+                break;
+            }
+
+            // Check if position is too close to existing rocks
+            if (IsTooCloseToExistingRock(rockSpawnPos))
+            {
+                Debug.Log($"Position ({rockSpawnPos.x}, {rockSpawnPos.y}) too close to existing rock");
+                continue;
+            }
+
+            float randomValue = Random.Range(0f, 1f);
+            Debug.Log($"Position ({rockSpawnPos.x}, {rockSpawnPos.y}) - Random: {randomValue}, Spawn chance: {RockSpawnChance}");
+
+            if (randomValue < RockSpawnChance)
+            {
+                float x = rockSpawnPos.y * (CellWidth + (AddGaps ? .2f : 0));
+                float z = rockSpawnPos.x * (CellHeight + (AddGaps ? .2f : 0));
+                Vector3 rockPos = new Vector3(x, RockHeight, z);
+
+                Debug.Log($"Spawning rock at world position: {rockPos}");
+
+                GameObject rock = Instantiate(RockPrefab, rockPos, Quaternion.identity) as GameObject;
+                rock.transform.parent = transform;
+
+                // Set up the rock for pushing
+                SetupPushableRock(rock);
+
+                // Mark this position as occupied
+                occupiedPositions.Add(rockSpawnPos);
+                rocksSpawned2++;
+
+                Debug.Log($"Rock {rocksSpawned2} spawned successfully");
+            }
+        }
+
+        Debug.Log($"Total rocks actually spawned: {rocksSpawned2}");
+
 
         // Shuffle the list to randomize spawn order
         for (int i = 0; i < potentialPositions.Count; i++)
@@ -353,11 +412,54 @@ public class MazeSpawner : MonoBehaviour
                 GameObject rock = Instantiate(RockPrefab, rockPos, Quaternion.identity) as GameObject;
                 rock.transform.parent = transform;
 
+                // Set up the rock for pushing
+                SetupPushableRock(rock);
+
                 // Mark this position as occupied
                 occupiedPositions.Add(rockSpawnPos);
                 rocksSpawned++;
             }
         }
+    }
+
+    void SetupPushableRock(GameObject rock)
+    {
+        // Add the PushableRock component if it doesn't exist
+        PushableRock pushableRock = rock.GetComponent<PushableRock>();
+        if (pushableRock == null)
+        {
+            pushableRock = rock.AddComponent<PushableRock>();
+        }
+
+        // Ensure the rock has a collider
+        Collider rockCollider = rock.GetComponent<Collider>();
+        if (rockCollider == null)
+        {
+            // Add a box collider if none exists
+            BoxCollider boxCollider = rock.AddComponent<BoxCollider>();
+            // Adjust size based on your rock prefab
+            boxCollider.size = Vector3.one;
+        }
+
+        // Ensure the rock has a rigidbody (PushableRock will add one if needed)
+        Rigidbody rb = rock.GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            rb = rock.AddComponent<Rigidbody>();
+        }
+
+        // Set up rock layer (create a "Rock" layer in your project)
+        rock.layer = LayerMask.NameToLayer("Rock");
+        if (rock.layer == -1)
+        {
+            Debug.LogWarning("Rock layer not found. Please create a 'Rock' layer in your project's Layer settings.");
+            rock.layer = 0; // Default layer
+        }
+
+        // Configure the pushable rock settings
+        pushableRock.pushSpeed = 2f;
+        pushableRock.wallLayerMask = LayerMask.GetMask("Wall"); // Make sure your walls are on "Wall" layer
+        pushableRock.raycastDistance = CellWidth * 0.6f; // Adjust based on your cell size
     }
 
     bool IsTooCloseToExistingRock(Vector2Int newRockPos)
