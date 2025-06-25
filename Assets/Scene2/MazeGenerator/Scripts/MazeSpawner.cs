@@ -43,7 +43,7 @@ public class MazeSpawner : MonoBehaviour
     {
         if (!FullRandom)
         {
-            Random.seed = RandomSeed;
+            Random.InitState(RandomSeed);
         }
         switch (Algorithm)
         {
@@ -108,11 +108,11 @@ public class MazeSpawner : MonoBehaviour
         // Third pass: spawn geysers in door openings (avoid rock positions)
         if (GeyserPrefab != null)
         {
-            SpawnGeysersInDoorways();
+            SpawnWaterfallsInDoorways();
         }
     }
 
-    void SpawnGeysersInDoorways()
+    void SpawnWaterfallsInDoorways()
     {
         // Define start and end room boundaries
         int startRoomSize = 3;
@@ -139,24 +139,32 @@ public class MazeSpawner : MonoBehaviour
                 float z = row * (CellHeight + (AddGaps ? .2f : 0));
                 MazeCell cell = mMazeGenerator.GetMazeCell(row, column);
 
-                // Check for door openings (missing walls) and spawn geysers
+                // Check for door openings (missing walls) and spawn waterfalls
 
                 // Right opening (door to the right)
                 if (!cell.WallRight && column + 1 < Columns)
                 {
                     // Don't spawn if the target position would be in a room
                     Vector3 targetPos = new Vector3(x + CellWidth / 2, GeyserHeight, z);
-                    Vector2Int geyserGridPos = new Vector2Int(row, column); // This represents the doorway position
+                    Vector2Int waterfallGridPos = new Vector2Int(row, column); // This represents the doorway position
 
                     if (!IsPositionInRoom(targetPos, row, column + 0.5f, startRoomSize, endRoomStartRow, endRoomStartCol) &&
-                       !IsPositionOccupied(geyserGridPos) &&
+                       !IsPositionOccupied(waterfallGridPos) &&
                        !IsNearStartRoomConnection(row, column))
                     {
                         if (Random.Range(0f, 1f) < GeyserSpawnChance)
                         {
-                            GameObject geyser = Instantiate(GeyserPrefab, targetPos, Quaternion.identity) as GameObject;
-                            geyser.transform.parent = transform;
-                            occupiedPositions.Add(geyserGridPos);
+                            GameObject waterfall = Instantiate(GeyserPrefab, targetPos, Quaternion.Euler(0, 90, 0)) as GameObject;
+                            waterfall.transform.parent = transform;
+
+                            // Add WaterfallBarrier component
+                            WaterfallBarrier barrier = waterfall.GetComponent<WaterfallBarrier>();
+                            if (barrier == null)
+                            {
+                                barrier = waterfall.AddComponent<WaterfallBarrier>();
+                            }
+
+                            occupiedPositions.Add(waterfallGridPos);
                         }
                     }
                 }
@@ -166,17 +174,25 @@ public class MazeSpawner : MonoBehaviour
                 {
                     // Don't spawn if the target position would be in a room
                     Vector3 targetPos = new Vector3(x, GeyserHeight, z + CellHeight / 2);
-                    Vector2Int geyserGridPos = new Vector2Int(row, column);
+                    Vector2Int waterfallGridPos = new Vector2Int(row, column);
 
                     if (!IsPositionInRoom(targetPos, row + 0.5f, column, startRoomSize, endRoomStartRow, endRoomStartCol) &&
-                       !IsPositionOccupied(geyserGridPos) &&
+                       !IsPositionOccupied(waterfallGridPos) &&
                        !IsNearStartRoomConnection(row, column))
                     {
                         if (Random.Range(0f, 1f) < GeyserSpawnChance)
                         {
-                            GameObject geyser = Instantiate(GeyserPrefab, targetPos, Quaternion.identity) as GameObject;
-                            geyser.transform.parent = transform;
-                            occupiedPositions.Add(geyserGridPos);
+                            GameObject waterfall = Instantiate(GeyserPrefab, targetPos, Quaternion.identity) as GameObject;
+                            waterfall.transform.parent = transform;
+
+                            // Add WaterfallBarrier component
+                            WaterfallBarrier barrier = waterfall.GetComponent<WaterfallBarrier>();
+                            if (barrier == null)
+                            {
+                                barrier = waterfall.AddComponent<WaterfallBarrier>();
+                            }
+
+                            occupiedPositions.Add(waterfallGridPos);
                         }
                     }
                 }
@@ -189,17 +205,25 @@ public class MazeSpawner : MonoBehaviour
                     if (!leftNeighbor.WallRight)
                     {
                         Vector3 targetPos = new Vector3(x - CellWidth / 2, GeyserHeight, z);
-                        Vector2Int geyserGridPos = new Vector2Int(row, column - 1);
+                        Vector2Int waterfallGridPos = new Vector2Int(row, column - 1);
 
                         if (!IsPositionInRoom(targetPos, row, column - 0.5f, startRoomSize, endRoomStartRow, endRoomStartCol) &&
-                           !IsPositionOccupied(geyserGridPos) &&
+                           !IsPositionOccupied(waterfallGridPos) &&
                            !IsNearStartRoomConnection(row, column))
                         {
                             if (Random.Range(0f, 1f) < GeyserSpawnChance)
                             {
-                                GameObject geyser = Instantiate(GeyserPrefab, targetPos, Quaternion.identity) as GameObject;
-                                geyser.transform.parent = transform;
-                                occupiedPositions.Add(geyserGridPos);
+                                GameObject waterfall = Instantiate(GeyserPrefab, targetPos, Quaternion.Euler(0, 270, 0)) as GameObject;
+                                waterfall.transform.parent = transform;
+
+                                // Add WaterfallBarrier component
+                                WaterfallBarrier barrier = waterfall.GetComponent<WaterfallBarrier>();
+                                if (barrier == null)
+                                {
+                                    barrier = waterfall.AddComponent<WaterfallBarrier>();
+                                }
+
+                                occupiedPositions.Add(waterfallGridPos);
                             }
                         }
                     }
@@ -213,17 +237,25 @@ public class MazeSpawner : MonoBehaviour
                     if (!backNeighbor.WallFront)
                     {
                         Vector3 targetPos = new Vector3(x, GeyserHeight, z - CellHeight / 2);
-                        Vector2Int geyserGridPos = new Vector2Int(row - 1, column);
+                        Vector2Int waterfallGridPos = new Vector2Int(row - 1, column);
 
                         if (!IsPositionInRoom(targetPos, row - 0.5f, column, startRoomSize, endRoomStartRow, endRoomStartCol) &&
-                           !IsPositionOccupied(geyserGridPos) &&
+                           !IsPositionOccupied(waterfallGridPos) &&
                            !IsNearStartRoomConnection(row, column))
                         {
                             if (Random.Range(0f, 1f) < GeyserSpawnChance)
                             {
-                                GameObject geyser = Instantiate(GeyserPrefab, targetPos, Quaternion.identity) as GameObject;
-                                geyser.transform.parent = transform;
-                                occupiedPositions.Add(geyserGridPos);
+                                GameObject waterfall = Instantiate(GeyserPrefab, targetPos, Quaternion.Euler(0, 180, 0)) as GameObject;
+                                waterfall.transform.parent = transform;
+
+                                // Add WaterfallBarrier component
+                                WaterfallBarrier barrier = waterfall.GetComponent<WaterfallBarrier>();
+                                if (barrier == null)
+                                {
+                                    barrier = waterfall.AddComponent<WaterfallBarrier>();
+                                }
+
+                                occupiedPositions.Add(waterfallGridPos);
                             }
                         }
                     }

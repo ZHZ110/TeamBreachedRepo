@@ -355,10 +355,10 @@ MonoBehaviour:
   AddGaps: 0
   GoalPrefab: {fileID: 159624, guid: 850205124263c924ea0aa82f0fdf2673, type: 3}
   GeyserPrefab: {fileID: 7117458108432597929, guid: dc0a413a4e2c11048adeb4c9bafd7417, type: 3}
-  GeyserSpawnChance: 0
+  GeyserSpawnChance: 1
   GeyserHeight: 1
   RockPrefab: {fileID: 3025869331567675355, guid: 60f43f47fd5259d40a3546a118374379, type: 3}
-  RockSpawnChance: 0.2
+  RockSpawnChance: 0
   RockHeight: 2.5
 --- !u!1001 &1169472596
 PrefabInstance:
