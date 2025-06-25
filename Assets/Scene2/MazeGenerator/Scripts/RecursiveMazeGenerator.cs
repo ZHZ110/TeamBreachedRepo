@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 //<summary>
 //Pure recursive maze generation.
@@ -7,7 +8,6 @@ using System.Collections;
 //</summary>
 public class RecursiveMazeGenerator : BasicMazeGenerator
 {
-
     public RecursiveMazeGenerator(int rows, int columns) : base(rows, columns)
     {
 
@@ -109,108 +109,6 @@ public class RecursiveMazeGenerator : BasicMazeGenerator
 
         // Set goal in center of end room
         GetMazeCell(startRow + 1, startCol + 1).IsGoal = true; // Center of 3x3 room
-    }
-
-    private void CreateEntrance()
-    {
-        // Create entrance into the start room (remove left wall of room)
-        GetMazeCell(0, 0).WallLeft = false;
-        GetMazeCell(1, 0).WallLeft = false; // Make entrance 2 cells high
-    }
-
-    private void CreateWideEntrance(int entranceWidth)
-    {
-        // Remove left walls vertically from starting area
-        for (int i = 0; i < entranceWidth; i++)
-        {
-            int row = i; // Start from row 0 and go down
-            if (row >= 0 && row < RowCount)
-            {
-                GetMazeCell(row, 0).WallLeft = false;
-            }
-        }
-    }
-
-    private void CreateExit()
-    {
-        // Create exit from the end room (top-right corner)
-        int exitRow = RowCount - 1;
-        int exitCol = ColumnCount - 1;
-
-        // Clear any existing goal markers
-        for (int row = 0; row < RowCount; row++)
-        {
-            for (int col = 0; col < ColumnCount; col++)
-            {
-                GetMazeCell(row, col).IsGoal = false;
-            }
-        }
-
-        // Create exit from the end room
-        GetMazeCell(exitRow, exitCol).WallRight = false;
-        GetMazeCell(exitRow - 1, exitCol).WallRight = false; // Make exit 2 cells high
-
-        // Set the goal flag in the center of the end room for spawning the seal
-        GetMazeCell(exitRow - 1, exitCol - 1).IsGoal = true;
-    }
-
-    private void CreateWideExit(int exitRow, int exitCol, int exitWidth)
-    {
-        // Determine which edge the exit is on
-        bool isTopEdge = (exitRow == 0);
-        bool isBottomEdge = (exitRow == RowCount - 1);
-        bool isLeftEdge = (exitCol == 0);
-        bool isRightEdge = (exitCol == ColumnCount - 1);
-
-        // Create wide exit based on which edge we're on
-        if (isBottomEdge)
-        {
-            // Bottom edge - remove front walls horizontally
-            for (int i = 0; i < exitWidth; i++)
-            {
-                int col = exitCol + i - (exitWidth / 2); // Center the opening
-                if (col >= 0 && col < ColumnCount)
-                {
-                    GetMazeCell(exitRow, col).WallFront = false;
-                }
-            }
-        }
-        else if (isRightEdge)
-        {
-            // Right edge - remove right walls vertically
-            for (int i = 0; i < exitWidth; i++)
-            {
-                int row = exitRow + i - (exitWidth / 2); // Center the opening
-                if (row >= 0 && row < RowCount)
-                {
-                    GetMazeCell(row, exitCol).WallRight = false;
-                }
-            }
-        }
-        else if (isTopEdge)
-        {
-            // Top edge - remove back walls horizontally
-            for (int i = 0; i < exitWidth; i++)
-            {
-                int col = exitCol + i - (exitWidth / 2); // Center the opening
-                if (col >= 0 && col < ColumnCount)
-                {
-                    GetMazeCell(exitRow, col).WallBack = false;
-                }
-            }
-        }
-        else if (isLeftEdge && !(exitRow == 0 && exitCol == 0))
-        {
-            // Left edge - remove left walls vertically (avoid entrance)
-            for (int i = 0; i < exitWidth; i++)
-            {
-                int row = exitRow + i - (exitWidth / 2); // Center the opening
-                if (row >= 0 && row < RowCount && !(row == 0 && exitCol == 0))
-                {
-                    GetMazeCell(row, exitCol).WallLeft = false;
-                }
-            }
-        }
     }
 
     private void CreatePerimeterWalls()
