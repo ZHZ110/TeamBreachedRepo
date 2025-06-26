@@ -178,6 +178,28 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6013632388104371080, guid: 6e0965b76baec374d9a8e0c82f9033cb, type: 3}
   m_PrefabInstance: {fileID: 1169472596}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &779854261 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1925873226565265906, guid: 2553cec8fdb3eb643bbe9f2ec880c472, type: 3}
+  m_PrefabInstance: {fileID: 577218127515061704}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &779854268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779854261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9bf5b5501f46bf48b71bfff4452ef83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pushRange: 1.5
+  rockLayerMask:
+    serializedVersion: 2
+    m_Bits: 64
+  pushAction: {fileID: -1916377846673030204, guid: 4419d82f33d36e848b3ed5af4c8da37e, type: 3}
 --- !u!1 &866631015
 GameObject:
   m_ObjectHideFlags: 0
@@ -353,7 +375,18 @@ MonoBehaviour:
   CellWidth: 10
   CellHeight: 10
   AddGaps: 0
-  GoalPrefab: {fileID: 159624, guid: 850205124263c924ea0aa82f0fdf2673, type: 3}
+  GoalPrefab: {fileID: 3942978291058208336, guid: f36536b56154a1a449a46bd4b0fed4b2, type: 3}
+  GeyserPrefab: {fileID: 7117458108432597929, guid: dc0a413a4e2c11048adeb4c9bafd7417, type: 3}
+  GeyserSpawnChance: 0
+  GeyserHeight: 1
+  RockPrefab: {fileID: 3025869331567675355, guid: 60f43f47fd5259d40a3546a118374379, type: 3}
+  RockSpawnChance: 1
+  RockHeight: 2.5
+  nextSceneName: SampleScene
+  triggerRadius: 2
+  coinRiseHeight: 10
+  cutsceneDuration: 3
+  coinRiseSound: {fileID: 0}
 --- !u!1001 &1169472596
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -580,7 +613,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1925873226565265906, guid: 2553cec8fdb3eb643bbe9f2ec880c472, type: 3}
+      insertIndex: 2
+      addedObject: {fileID: 779854268}
   m_SourcePrefab: {fileID: 100100000, guid: 2553cec8fdb3eb643bbe9f2ec880c472, type: 3}
 --- !u!1001 &8823342814437284487
 PrefabInstance:
