@@ -7,12 +7,17 @@ public class GameController : MonoBehaviour
     [Header("Controllers")]
     public ThirdPersonController swimController; // Unity's controller
     public WhaleIceController iceController;     // Your custom controller
+    public WhaleStaminaSystem staminaSystem;
 
     void Start()
     {
         // Get components from the same GameObject
         swimController = GetComponent<ThirdPersonController>();
         iceController = GetComponent<WhaleIceController>();
+        staminaSystem = GetComponent<WhaleStaminaSystem>();
+
+        // Stamina system is always active
+        staminaSystem.enabled = true;
 
         // Scene 2: Swimming
         if (SceneManager.GetActiveScene().name == "Scene2")
