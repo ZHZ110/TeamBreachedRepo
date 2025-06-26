@@ -200,6 +200,35 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   pushAction: {fileID: -1916377846673030204, guid: 4419d82f33d36e848b3ed5af4c8da37e, type: 3}
+--- !u!114 &779854269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779854261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc0bfdc0c7303ef4abb9d43f941db670, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  swimController: {fileID: 0}
+  iceController: {fileID: 0}
+--- !u!114 &779854270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779854261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db0fcbf430a6cae4dbc3ae7d3e190770, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  jumpForce: 12
+  wiggleForce: 5
+  slideFriction: 0.1
 --- !u!1 &866631015
 GameObject:
   m_ObjectHideFlags: 0
@@ -382,7 +411,7 @@ MonoBehaviour:
   RockPrefab: {fileID: 3025869331567675355, guid: 60f43f47fd5259d40a3546a118374379, type: 3}
   RockSpawnChance: 1
   RockHeight: 2.5
-  nextSceneName: SampleScene
+  nextSceneName: Scene3
   triggerRadius: 2
   coinRiseHeight: 10
   cutsceneDuration: 3
@@ -617,6 +646,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1925873226565265906, guid: 2553cec8fdb3eb643bbe9f2ec880c472, type: 3}
       insertIndex: 2
       addedObject: {fileID: 779854268}
+    - targetCorrespondingSourceObject: {fileID: 1925873226565265906, guid: 2553cec8fdb3eb643bbe9f2ec880c472, type: 3}
+      insertIndex: 5
+      addedObject: {fileID: 779854270}
+    - targetCorrespondingSourceObject: {fileID: 1925873226565265906, guid: 2553cec8fdb3eb643bbe9f2ec880c472, type: 3}
+      insertIndex: 6
+      addedObject: {fileID: 779854269}
   m_SourcePrefab: {fileID: 100100000, guid: 2553cec8fdb3eb643bbe9f2ec880c472, type: 3}
 --- !u!1001 &8823342814437284487
 PrefabInstance:

@@ -93,12 +93,13 @@ public class EndRoomTrigger : MonoBehaviour
             {
                 // Skip this trigger script and essential Unity components
                 if (script != this &&
+                    script != null &&
                     !(script is Transform) &&
                     !(script is Camera) &&
                     !(script is AudioSource) &&
-                    script.GetType().Name.ToLower().Contains("move") ||
-                    script.GetType().Name.ToLower().Contains("control") ||
-                    script.GetType().Name.ToLower().Contains("player"))
+                    (script.GetType().Name.ToLower().Contains("move") ||
+                     script.GetType().Name.ToLower().Contains("control") ||
+                     script.GetType().Name.ToLower().Contains("player")))
                 {
                     script.enabled = false;
                     Debug.Log($"Disabled player script: {script.GetType().Name}");
@@ -127,6 +128,7 @@ public class EndRoomTrigger : MonoBehaviour
             foreach (var script in playerMovementScripts)
             {
                 if (script != this &&
+                    script != null &&
                     !(script is Transform) &&
                     !(script is Camera) &&
                     !(script is AudioSource))
