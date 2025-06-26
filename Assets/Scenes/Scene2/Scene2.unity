@@ -229,6 +229,8 @@ MonoBehaviour:
   jumpForce: 12
   wiggleForce: 5
   slideFriction: 0.1
+  waterBobForce: 2
+  waterDamping: 5
 --- !u!1 &866631015
 GameObject:
   m_ObjectHideFlags: 0
@@ -409,7 +411,7 @@ MonoBehaviour:
   GeyserSpawnChance: 0
   GeyserHeight: 1
   RockPrefab: {fileID: 3025869331567675355, guid: 60f43f47fd5259d40a3546a118374379, type: 3}
-  RockSpawnChance: 1
+  RockSpawnChance: 0.2
   RockHeight: 2.5
   nextSceneName: Scene3
   triggerRadius: 2
