@@ -8,6 +8,7 @@ TagManager:
   - Coin
   - CinemachineTarget
   - Water
+  - Goal
   layers:
   - Default
   - TransparentFX
