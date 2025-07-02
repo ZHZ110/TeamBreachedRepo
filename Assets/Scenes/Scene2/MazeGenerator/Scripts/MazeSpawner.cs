@@ -398,34 +398,34 @@ public class MazeSpawner : MonoBehaviour
             }
         }
 
-       ////Debug.Log($"Total potential rock positions found: {potentialPositions.Count}");
+        ////Debug.Log($"Total potential rock positions found: {potentialPositions.Count}");
 
         // After the "Total potential rock positions found" //Debug line, add:
 
         // Now try to spawn rocks from the shuffled list
         int rocksSpawned2 = 0;
         int maxRocks2 = Mathf.Max(1, (Rows * Columns) / 50); // Limit based on maze size
-       ////Debug.Log($"Max rocks allowed: {maxRocks2}");
-       ////Debug.Log($"Rock spawn chance: {RockSpawnChance}");
+                                                             ////Debug.Log($"Max rocks allowed: {maxRocks2}");
+                                                             ////Debug.Log($"Rock spawn chance: {RockSpawnChance}");
 
         foreach (Vector2Int rockSpawnPos in potentialPositions)
         {
             // Stop if we've spawned enough rocks
             if (rocksSpawned2 >= maxRocks2)
             {
-               ////Debug.Log($"Reached max rocks limit: {maxRocks2}");
+                ////Debug.Log($"Reached max rocks limit: {maxRocks2}");
                 break;
             }
 
             // Check if position is too close to existing rocks
             if (IsTooCloseToExistingRock(rockSpawnPos))
             {
-               ////Debug.Log($"Position ({rockSpawnPos.x}, {rockSpawnPos.y}) too close to existing rock");
+                ////Debug.Log($"Position ({rockSpawnPos.x}, {rockSpawnPos.y}) too close to existing rock");
                 continue;
             }
 
             float randomValue = Random.Range(0f, 1f);
-           ////Debug.Log($"Position ({rockSpawnPos.x}, {rockSpawnPos.y}) - Random: {randomValue}, Spawn chance: {RockSpawnChance}");
+            ////Debug.Log($"Position ({rockSpawnPos.x}, {rockSpawnPos.y}) - Random: {randomValue}, Spawn chance: {RockSpawnChance}");
 
             if (randomValue < RockSpawnChance)
             {
@@ -433,7 +433,7 @@ public class MazeSpawner : MonoBehaviour
                 float z = rockSpawnPos.x * (CellHeight + (AddGaps ? .2f : 0));
                 Vector3 rockPos = new Vector3(x, RockHeight, z);
 
-               ////Debug.Log($"Spawning rock at world position: {rockPos}");
+                ////Debug.Log($"Spawning rock at world position: {rockPos}");
 
                 GameObject rock = Instantiate(RockPrefab, rockPos, Quaternion.identity) as GameObject;
                 rock.transform.parent = transform;
@@ -445,11 +445,11 @@ public class MazeSpawner : MonoBehaviour
                 occupiedPositions.Add(rockSpawnPos);
                 rocksSpawned2++;
 
-               ////Debug.Log($"Rock {rocksSpawned2} spawned successfully");
+                ////Debug.Log($"Rock {rocksSpawned2} spawned successfully");
             }
         }
 
-       ////Debug.Log($"Total rocks actually spawned: {rocksSpawned2}");
+        ////Debug.Log($"Total rocks actually spawned: {rocksSpawned2}");
 
 
         // Shuffle the list to randomize spawn order
@@ -527,7 +527,7 @@ public class MazeSpawner : MonoBehaviour
         rock.layer = LayerMask.NameToLayer("Rock");
         if (rock.layer == -1)
         {
-           ////Debug.LogWarning("Rock layer not found. Please create a 'Rock' layer in your project's Layer settings.");
+            ////Debug.LogWarning("Rock layer not found. Please create a 'Rock' layer in your project's Layer settings.");
             rock.layer = 0; // Default layer
         }
 
@@ -836,11 +836,11 @@ public class MazeSpawner : MonoBehaviour
             MazeCell xCell = mMazeGenerator.GetMazeCell(row, column + 1); // X position (right of rock)
 
             // //Debug logging
-           ////Debug.Log($"Checking Vertical Pattern 1 at ({row},{column}):");
-           ////Debug.Log($"Rock: Front={rockCell.WallFront}, Back={rockCell.WallBack}, Left={rockCell.WallLeft}, Right={rockCell.WallRight}");
-           ////Debug.Log($"Alcove: Front={alcoveCell.WallFront}, Back={alcoveCell.WallBack}, Left={alcoveCell.WallLeft}, Right={alcoveCell.WallRight}");
-           ////Debug.Log($"Player: Front={playerCell.WallFront}, Back={playerCell.WallBack}, Left={playerCell.WallLeft}, Right={playerCell.WallRight}");
-           ////Debug.Log($"X: Front={xCell.WallFront}, Back={xCell.WallBack}, Left={xCell.WallLeft}, Right={xCell.WallRight}");
+            ////Debug.Log($"Checking Vertical Pattern 1 at ({row},{column}):");
+            ////Debug.Log($"Rock: Front={rockCell.WallFront}, Back={rockCell.WallBack}, Left={rockCell.WallLeft}, Right={rockCell.WallRight}");
+            ////Debug.Log($"Alcove: Front={alcoveCell.WallFront}, Back={alcoveCell.WallBack}, Left={alcoveCell.WallLeft}, Right={alcoveCell.WallRight}");
+            ////Debug.Log($"Player: Front={playerCell.WallFront}, Back={playerCell.WallBack}, Left={playerCell.WallLeft}, Right={playerCell.WallRight}");
+            ////Debug.Log($"X: Front={xCell.WallFront}, Back={xCell.WallBack}, Left={xCell.WallLeft}, Right={xCell.WallRight}");
 
             // Key validation: Player should NOT be able to reach X directly
             // Check if player can reach X without going through rock
@@ -848,7 +848,7 @@ public class MazeSpawner : MonoBehaviour
 
             if (playerCanReachXDirectly)
             {
-               ////Debug.Log("REJECTED: Player can reach X directly without pushing rock");
+                ////Debug.Log("REJECTED: Player can reach X directly without pushing rock");
                 return false;
             }
 
@@ -868,14 +868,14 @@ public class MazeSpawner : MonoBehaviour
             bool playerAccessible = !playerCell.WallBack; // Player can reach rock
             bool xHasLimitedAccess = xCell.WallLeft; // X is blocked from rock side
 
-           ////Debug.Log($"Conditions: rockAccessible={rockAccessibleFromPlayer}, canEnterAlcove={rockCanEnterAlcove}, blocksX={rockBlocksX}, alcoveDeadEnd={alcoveIsDeadEnd}, alcoveOpen={alcoveOpenToRock}, playerAccess={playerAccessible}, xLimited={xHasLimitedAccess}");
+            ////Debug.Log($"Conditions: rockAccessible={rockAccessibleFromPlayer}, canEnterAlcove={rockCanEnterAlcove}, blocksX={rockBlocksX}, alcoveDeadEnd={alcoveIsDeadEnd}, alcoveOpen={alcoveOpenToRock}, playerAccess={playerAccessible}, xLimited={xHasLimitedAccess}");
 
             bool isValid = rockAccessibleFromPlayer && rockCanEnterAlcove && rockBlocksX &&
                           alcoveIsDeadEnd && alcoveOpenToRock && playerAccessible && xHasLimitedAccess;
 
             if (isValid)
             {
-               ////Debug.Log("ACCEPTED: Valid rock puzzle pattern found!");
+                ////Debug.Log("ACCEPTED: Valid rock puzzle pattern found!");
             }
 
             return isValid;
