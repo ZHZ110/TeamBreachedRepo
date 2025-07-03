@@ -105,6 +105,7 @@ public class Player : MonoBehaviour
         }
         if(taken_by_wave)
         {
+            // might need to modify this part in the future
             transform.position = Vector3.MoveTowards(transform.position,
                 wave_location, moveSpeed * Time.deltaTime);
         }

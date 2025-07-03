@@ -14,7 +14,7 @@ public class Wave : MonoBehaviour
 
     private void Start()
     {
-        original_wave_pos = transform.position;
+        original_wave_pos = transform.Find("Sphere").position;
         Transform sphere_trans = transform.Find("Sphere");
         if (sphere_trans == null)
         {
@@ -37,7 +37,20 @@ public class Wave : MonoBehaviour
             Debug.Log("echo location called!");
             // moving towards to orca
             transform.Find("Sphere").position = Vector3.MoveTowards(transform.Find("Sphere").position,
-                orca_location, moveSpeed * Time.deltaTime);  
+                orca_location, moveSpeed * Time.deltaTime);
+            float orcaSize = 1.0f;
+            Vector3 moveVec = orca_location - original_wave_pos;
+            Ray ray = new Ray(transform.Find("Sphere").position, moveVec);
+            if (Physics.Raycast(ray, out RaycastHit hit, orcaSize))
+            {
+                Collider col = hit.collider;
+                if (col is CapsuleCollider)
+                {
+                    signal_received = SignalType.Wave_PullOrca;
+                    Debug.Log("Hit: " + hit.collider.name);
+                    player.SetTakenByWave(true, original_wave_pos);
+                }
+            }
         }
         else if (signal_received == SignalType.Wave_PullOrca)
         {
@@ -46,18 +59,6 @@ public class Wave : MonoBehaviour
                 original_wave_pos, moveSpeed * Time.deltaTime);
         }
         //Vector3 moveDir = new Vector3(moveVec.x, 0f, moveVec.y);
-        float orcaSize = 1.0f;
-        Ray ray = new Ray(transform.Find("Sphere").position, transform.Find("Sphere").forward);
-        if (Physics.Raycast(ray, out RaycastHit hit, orcaSize))
-        {
-            Collider col = hit.collider;
-            if (col is CapsuleCollider)
-            {
-                signal_received = SignalType.Wave_PullOrca;
-                Debug.Log("Hit: " + hit.collider.name);
-                player.SetTakenByWave(true, original_wave_pos);
-            }
-        }
         //transform.position += moveDir * moveSpeed * Time.deltaTime;
     }
     public SignalType Get_Signal_Received()
