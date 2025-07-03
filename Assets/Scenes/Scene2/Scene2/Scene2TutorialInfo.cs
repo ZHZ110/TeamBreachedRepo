@@ -21,7 +21,7 @@ public class Scene2TutorialInfo : MonoBehaviour
     public string secondMessage = "You can use the arrow keys to swim and Q/E to move up and down.";
 
     [TextArea(3, 5)]
-    public string thirdMessage = "If you hold shift, you can swim faster, which is necessary to get through geysers. If you approach a rock and hold space, you can push rocks out of the way.";
+    public string thirdMessage = "If you hold shift, you can swim faster, which is necessary to get through waterfalls. If you approach a rock and hold space, you can push rocks out of the way.";
 
     [TextArea(3, 5)]
     public string fourthMessage = "It can be hard navigating the ocean, so if you get lost, press C to use echolocation. If it's green, you are headed in the right direction.";

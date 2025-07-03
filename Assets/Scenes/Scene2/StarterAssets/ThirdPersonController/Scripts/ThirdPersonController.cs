@@ -32,6 +32,14 @@ namespace StarterAssets
         public AudioClip[] FootstepAudioClips;
         [Range(0, 1)] public float FootstepAudioVolume = 0.5f;
 
+        [Header("Swimming Audio")]
+        public AudioSource swimmingAudioSource;
+        public AudioClip swimmingSound;
+        [Range(0, 1)] public float SwimmingAudioVolume = 0.5f;
+        [Range(0.8f, 2.0f)] public float NormalSwimPitch = 1.0f;
+        [Range(0.8f, 2.0f)] public float SprintSwimPitch = 1.5f;  // Higher pitch for faster swimming
+
+
         [Space(10)]
         [Tooltip("The height the player can jump")]
         public float JumpHeight = 1.2f;
@@ -91,6 +99,8 @@ namespace StarterAssets
         // Private variables for smooth vertical movement
         private Vector3 _targetVerticalPosition;
         private bool _isMovingVertically = false;
+        private bool _isSwimming = false;
+
 
         // cinemachine
         private float _cinemachineTargetYaw;
@@ -257,6 +267,43 @@ namespace StarterAssets
             {
                 _speed = targetSpeed;
             }
+
+            // Check if whale should be swimming
+            bool shouldBeSwimming = _input.move != Vector2.zero && _speed > 0.1f;
+            bool isSprinting = _input.sprint && shouldBeSwimming;
+
+            // Handle swimming audio
+            if (shouldBeSwimming && !_isSwimming)
+            {
+                // Start swimming sound
+                if (swimmingAudioSource && swimmingSound)
+                {
+                    swimmingAudioSource.clip = swimmingSound;
+                    swimmingAudioSource.volume = SwimmingAudioVolume;
+                    swimmingAudioSource.loop = true;
+                    swimmingAudioSource.pitch = isSprinting ? SprintSwimPitch : NormalSwimPitch;
+                    swimmingAudioSource.Play();
+                }
+                _isSwimming = true;
+            }
+            else if (shouldBeSwimming && _isSwimming)
+            {
+                // Update pitch while swimming (for sprint transitions)
+                if (swimmingAudioSource)
+                {
+                    swimmingAudioSource.pitch = isSprinting ? SprintSwimPitch : NormalSwimPitch;
+                }
+            }
+            else if (!shouldBeSwimming && _isSwimming)
+            {
+                // Stop swimming sound
+                if (swimmingAudioSource)
+                {
+                    swimmingAudioSource.Stop();
+                }
+                _isSwimming = false;
+            }
+
 
             _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime * SpeedChangeRate);
             if (_animationBlend < 0.01f) _animationBlend = 0f;
