@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
     [SerializeField] private Wave wave1;
     [SerializeField] private Wave wave2;
     [SerializeField] private Wave wave3;
+    [SerializeField] private BeachWaveController beachWaveController;
 
     public enum SignalType
     {
@@ -33,6 +34,8 @@ public class Player : MonoBehaviour
     private float TEMPERATURE_MAX = 30;
     private bool taken_by_wave = false;
     private Vector3 wave_location;
+    private bool isInWater = false;
+    private bool hasWon = false;
 
     private void Start()
     {
@@ -54,7 +57,39 @@ public class Player : MonoBehaviour
         {
             //Debug.Log("Wigging Tail!");
             w_pressed = true;
-            inputVector.x = -0.5f;
+
+            Vector3 baseMovement = new Vector3(-2.0f, 0f, 0f) * moveSpeed * Time.deltaTime;
+
+            if (beachWaveController != null)
+            {
+                float waveMultiplier = beachWaveController.GetBeachWaveMultiplier(transform.position);
+                baseMovement *= waveMultiplier;
+
+                // Debug wave effects
+                bool isAdvancing = beachWaveController.IsWaveAdvancing();
+                float waveStrength = beachWaveController.GetWaveStrength();
+
+                // Check if whale moved at the right time
+                string timingFeedback = "Neutral timing.";
+
+                if (!isAdvancing && waveMultiplier > 1.0f)
+                {
+                    timingFeedback = "PERFECT TIMING! Wave is helping you move!";
+                }
+                else if (isAdvancing && waveMultiplier < 1.0f)
+                {
+                    timingFeedback = "BAD TIMING! Wave is working against you.";
+                }
+
+                Debug.Log($"Wave {(isAdvancing ? "coming in" : "going out")}, strength: {waveStrength:F2}, multiplier: {waveMultiplier:F2} - {timingFeedback}");
+            }
+
+            else
+            {
+                Debug.Log("No BeachWaveController assigned!");
+            }
+
+            transform.position += baseMovement;
             stamina = stamina - 1;
             onStaminaChanged?.Invoke(this, new OnStaminaChangedEventArgs{
                 staminaNormalized = (float)stamina / STAMINA_MAX
@@ -87,10 +122,21 @@ public class Player : MonoBehaviour
             //transform.forward += new Vector3(0.01f, 0f, 0f);
             transform.forward = Vector3.Slerp(transform.forward, rotateDir, Time.deltaTime * rotateSpeed);
         }
-        //transform.position += moveDir * moveSpeed* Time.deltaTime;
+
+        // Move in world space
+        if (!taken_by_wave && moveDir != Vector3.zero)
+        {
+            transform.position += moveDir * moveSpeed * Time.deltaTime;
+        }
+
         temperature += 0.01f;
 
-        Debug.Log(transform.position);
+        //Debug.Log("Position: " + transform.position);
+        //Debug.Log("Forward direction: " + transform.forward);
+        //Debug.Log("Capsule position: " + transform.Find("Capsule").position);
+
+
+        //Debug.Log(transform.position);
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             wave1.SetSignal(SignalType.Echolocation, transform.Find("Capsule").position);
@@ -135,5 +181,40 @@ public class Player : MonoBehaviour
     {
         taken_by_wave = _takenByWave;
         wave_location = _waveLocation;
+    }
+
+    public void OnCapsuleEnteredWater()
+    {
+        isInWater = true;
+        Debug.Log("Capsule entered water!");
+        CheckWinCondition();
+    }
+
+    public void OnCapsuleInWater()
+    {
+        if (!hasWon)
+        {
+            CheckWinCondition();
+        }
+    }
+
+    public void OnCapsuleExitedWater()
+    {
+        isInWater = false;
+        Debug.Log("Capsule exited water!");
+    }
+
+    private void CheckWinCondition()
+    {
+        if (isInWater && !hasWon)
+        {
+            PlayerWins();
+        }
+    }
+
+    private void PlayerWins()
+    {
+        hasWon = true;
+        Debug.Log("Player Wins! Whale is fully submerged!");
     }
 }
