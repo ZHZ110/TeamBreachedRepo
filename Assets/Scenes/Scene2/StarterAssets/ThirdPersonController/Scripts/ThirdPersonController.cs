@@ -3,9 +3,6 @@
 using UnityEngine.InputSystem;
 #endif
 
-/* Note: animations are called via the controller for both the character and capsule using animator null checks
- */
-
 namespace StarterAssets
 {
     [RequireComponent(typeof(CharacterController))]
@@ -23,7 +20,7 @@ namespace StarterAssets
 
         [Tooltip("How fast the character turns to face movement direction")]
         [Range(0.0f, 0.3f)]
-        public float RotationSmoothTime = 0.12f;
+        public float RotationSmoothTime = 0.3f;
 
         [Tooltip("Acceleration and deceleration")]
         public float SpeedChangeRate = 10.0f;
@@ -37,8 +34,7 @@ namespace StarterAssets
         public AudioClip swimmingSound;
         [Range(0, 1)] public float SwimmingAudioVolume = 0.5f;
         [Range(0.8f, 2.0f)] public float NormalSwimPitch = 1.0f;
-        [Range(0.8f, 2.0f)] public float SprintSwimPitch = 1.5f;  // Higher pitch for faster swimming
-
+        [Range(0.8f, 2.0f)] public float SprintSwimPitch = 1.5f;
 
         [Space(10)]
         [Tooltip("The height the player can jump")]
@@ -101,6 +97,8 @@ namespace StarterAssets
         private bool _isMovingVertically = false;
         private bool _isSwimming = false;
 
+        // Reference to PlayerRockPusher to check if pushing
+        private PlayerRockPusher _rockPusher;
 
         // cinemachine
         private float _cinemachineTargetYaw;
@@ -164,10 +162,14 @@ namespace StarterAssets
             _hasAnimator = TryGetComponent(out _animator);
             _controller = GetComponent<CharacterController>();
             _input = GetComponent<StarterAssetsInputs>();
+
+            // Get reference to rock pusher script
+            _rockPusher = GetComponent<PlayerRockPusher>();
+
 #if ENABLE_INPUT_SYSTEM
             _playerInput = GetComponent<PlayerInput>();
 #else
-            Debug.LogError("Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
+            //Debug.LogError("Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
 #endif
 
             AssignAnimationIDs();
@@ -268,8 +270,11 @@ namespace StarterAssets
                 _speed = targetSpeed;
             }
 
-            // Check if whale should be swimming
-            bool shouldBeSwimming = _input.move != Vector2.zero && _speed > 0.1f;
+            // Check if player is pushing a rock
+            bool isPushingRock = _rockPusher != null && _rockPusher.IsPushing();
+
+            // Check if whale should be swimming (but not if pushing rocks)
+            bool shouldBeSwimming = _input.move != Vector2.zero && _speed > 0.1f && !isPushingRock;
             bool isSprinting = _input.sprint && shouldBeSwimming;
 
             // Handle swimming audio
@@ -283,6 +288,7 @@ namespace StarterAssets
                     swimmingAudioSource.loop = true;
                     swimmingAudioSource.pitch = isSprinting ? SprintSwimPitch : NormalSwimPitch;
                     swimmingAudioSource.Play();
+                    //Debug.Log("Swimming audio started");
                 }
                 _isSwimming = true;
             }
@@ -294,16 +300,16 @@ namespace StarterAssets
                     swimmingAudioSource.pitch = isSprinting ? SprintSwimPitch : NormalSwimPitch;
                 }
             }
-            else if (!shouldBeSwimming && _isSwimming)
+            else if ((!shouldBeSwimming || isPushingRock) && _isSwimming)
             {
-                // Stop swimming sound
+                // Stop swimming sound (either not moving or pushing rocks)
                 if (swimmingAudioSource)
                 {
                     swimmingAudioSource.Stop();
+                    //Debug.Log($"Swimming audio stopped. Reason: {(isPushingRock ? "Pushing rock" : "Not moving")}");
                 }
                 _isSwimming = false;
             }
-
 
             _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime * SpeedChangeRate);
             if (_animationBlend < 0.01f) _animationBlend = 0f;
@@ -311,17 +317,19 @@ namespace StarterAssets
             // normalise input direction
             Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
 
-            // if there is a move input rotate player when the player is moving
+            // Always update target rotation when there's input (even if not moving)
             if (_input.move != Vector2.zero)
             {
                 _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
                                   _mainCamera.transform.eulerAngles.y;
-                float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
-                    RotationSmoothTime);
-
-                // rotate to face input direction relative to camera position
-                transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
             }
+
+            // Always smoothly rotate towards target rotation (whether moving or stationary)
+            float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
+                RotationSmoothTime);
+
+            // rotate to face input direction relative to camera position
+            transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
 
             Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
 
@@ -341,7 +349,7 @@ namespace StarterAssets
                 if (collisionFlags == CollisionFlags.Above && verticalMovement > 0)
                 {
                     _isMovingVertically = false;
-                    Debug.Log("Hit ceiling, stopping upward movement");
+                    //Debug.Log("Hit ceiling, stopping upward movement");
                 }
 
                 _verticalVelocity = 0f;
