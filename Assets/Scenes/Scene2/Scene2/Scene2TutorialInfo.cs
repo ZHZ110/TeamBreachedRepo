@@ -10,7 +10,7 @@ public class Scene2TutorialInfo : MonoBehaviour
     public TextMeshProUGUI continuePrompt;
 
     [Header("Player Control")]
-    public MonoBehaviour playerController; // Assign your whale controller script
+    public MonoBehaviour playerController;
     public KeyCode continueKey = KeyCode.Space;
 
     [Header("Tutorial Messages")]
@@ -31,26 +31,39 @@ public class Scene2TutorialInfo : MonoBehaviour
     public string startPromptText = "Press SPACE to start";
 
     [Header("Audio")]
-    public AudioSource audioSource;
+    public AudioSource tutorialAudioSource; // Dedicated AudioSource for tutorial
     public AudioClip advanceSound;
+    [Range(0f, 1f)]
+    public float tutorialSoundVolume = 1f;
 
     private bool infoWindowActive = false;
-    private int currentStage = 0; // 0 = first message, 1 = second message, 2 = third message
+    private int currentStage = 0;
     private bool tutorialComplete = false;
 
     void Start()
     {
-        // Disable player movement initially
-        DisablePlayerMovement();
+        // Create dedicated AudioSource for tutorial sounds
+        if (tutorialAudioSource == null)
+        {
+            GameObject tutorialAudioGO = new GameObject("TutorialAudio");
+            tutorialAudioGO.transform.SetParent(transform);
+            tutorialAudioGO.transform.localPosition = Vector3.zero;
+            tutorialAudioSource = tutorialAudioGO.AddComponent<AudioSource>();
+        }
 
-        // Setup and show the first tutorial message
+        // Setup tutorial AudioSource
+        tutorialAudioSource.playOnAwake = false;
+        tutorialAudioSource.spatialBlend = 0f; // 2D sound for UI
+
+        //Debug.Log($"Tutorial audio setup complete. Advance sound: {advanceSound != null}");
+
+        DisablePlayerMovement();
         SetupTutorialStage(0);
         ShowInfoWindow();
     }
 
     void Update()
     {
-        // Only handle input if info window is active and tutorial isn't complete
         if (infoWindowActive && !tutorialComplete)
         {
             if (Input.GetKeyDown(continueKey))
@@ -66,78 +79,75 @@ public class Scene2TutorialInfo : MonoBehaviour
 
         switch (stage)
         {
-            case 0: // First message
+            case 0:
                 if (infoText) infoText.text = firstMessage;
                 if (continuePrompt) continuePrompt.text = continuePromptText;
                 break;
-
-            case 1: // Second message
+            case 1:
                 if (infoText) infoText.text = secondMessage;
                 if (continuePrompt) continuePrompt.text = continuePromptText;
                 break;
-
-            case 2: // Third message
+            case 2:
                 if (infoText) infoText.text = thirdMessage;
                 if (continuePrompt) continuePrompt.text = continuePromptText;
                 break;
-
-            case 3: // Fourth message
+            case 3:
                 if (infoText) infoText.text = fourthMessage;
                 if (continuePrompt) continuePrompt.text = startPromptText;
                 break;
         }
 
-        Debug.Log($"Tutorial stage {stage} setup complete");
+        //Debug.Log($"Tutorial stage {stage} setup complete");
     }
 
     void ShowInfoWindow()
     {
         infoWindowActive = true;
 
-        // Show info window
         if (infoWindow)
         {
             infoWindow.SetActive(true);
         }
 
-        // Pause the game time (optional - remove if you don't want time to pause)
         Time.timeScale = 0f;
-
-        Debug.Log($"Displaying tutorial stage {currentStage}");
+        //Debug.Log($"Displaying tutorial stage {currentStage}");
     }
 
     void HideInfoWindow()
     {
         infoWindowActive = false;
 
-        // Hide info window
         if (infoWindow)
         {
             infoWindow.SetActive(false);
         }
 
-        // Resume game time
         Time.timeScale = 1f;
     }
 
     void AdvanceToNextStage()
     {
         // Play advance sound
-        if (audioSource && advanceSound)
+        if (tutorialAudioSource != null && advanceSound != null)
         {
-            audioSource.PlayOneShot(advanceSound);
+            tutorialAudioSource.clip = advanceSound;
+            tutorialAudioSource.volume = tutorialSoundVolume;
+            tutorialAudioSource.Play();
+            //Debug.Log("Tutorial advance sound played");
+        }
+        else
+        {
+            //Debug.LogWarning($"Cannot play tutorial sound. AudioSource: {tutorialAudioSource != null}, Clip: {advanceSound != null}");
         }
 
         currentStage++;
 
-        if (currentStage >= 4) // We have 3 stages (0, 1, 2, 3)
+        if (currentStage >= 4)
         {
-            // Tutorial complete - enable player movement
             CompleteTutorial();
         }
         else
         {
-            // Setup next stage
             SetupTutorialStage(currentStage);
         }
     }
@@ -147,8 +157,7 @@ public class Scene2TutorialInfo : MonoBehaviour
         tutorialComplete = true;
         HideInfoWindow();
         EnablePlayerMovement();
-
-        Debug.Log("Tutorial complete! Player can now move.");
+        //Debug.Log("Tutorial complete! Player can now move.");
     }
 
     void DisablePlayerMovement()
@@ -156,11 +165,11 @@ public class Scene2TutorialInfo : MonoBehaviour
         if (playerController != null)
         {
             playerController.enabled = false;
-            Debug.Log("Player movement disabled for tutorial");
+            //Debug.Log("Player movement disabled for tutorial");
         }
         else
         {
-            Debug.LogWarning("Player controller not assigned! Player movement control may not work properly.");
+            //Debug.LogWarning("Player controller not assigned!");
         }
     }
 
@@ -169,11 +178,10 @@ public class Scene2TutorialInfo : MonoBehaviour
         if (playerController != null)
         {
             playerController.enabled = true;
-            Debug.Log("Player movement enabled");
+            //Debug.Log("Player movement enabled");
         }
     }
 
-    // Public method to manually trigger tutorial (if needed)
     public void StartTutorial()
     {
         if (!tutorialComplete)
@@ -184,17 +192,15 @@ public class Scene2TutorialInfo : MonoBehaviour
         }
     }
 
-    // Public method to skip tutorial (for testing)
     public void SkipTutorial()
     {
         tutorialComplete = true;
         currentStage = 4;
         HideInfoWindow();
         EnablePlayerMovement();
-        Debug.Log("Tutorial skipped!");
+        //Debug.Log("Tutorial skipped!");
     }
 
-    // Public method to check if tutorial is complete (other scripts can use this)
     public bool IsTutorialComplete()
     {
         return tutorialComplete;
@@ -202,7 +208,6 @@ public class Scene2TutorialInfo : MonoBehaviour
 
     void OnDestroy()
     {
-        // Make sure time scale is reset when this object is destroyed
         Time.timeScale = 1f;
     }
 }
