@@ -138,7 +138,8 @@ public class MazeSpawner : MonoBehaviour
         float z = centerRow * (CellHeight + (AddGaps ? .2f : 0));
 
         // Spawn goal at center of end room
-        GameObject goal = Instantiate(GoalPrefab, new Vector3(x, 1, z), Quaternion.Euler(0, 0, 0)) as GameObject;
+        GameObject goal = Instantiate(GoalPrefab, new Vector3(x, 2, z), GoalPrefab.transform.rotation) as GameObject;
+        
         goal.transform.parent = transform;
 
         // IMPORTANT: Tag the goal for echolocation system
