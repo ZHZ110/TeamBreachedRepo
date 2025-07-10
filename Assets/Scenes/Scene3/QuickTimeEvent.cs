@@ -49,17 +49,24 @@ public class QuickTimeEvent : MonoBehaviour
     [TextArea(3, 5)]
     public string completionText = "Now you know how to breach. Let's go eat!";
     public string completionPromptText = "Press SPACE to continue";
+
     [Header("Stamina Settings")]
     public int jumpStaminaCost = 500; // Direct stamina amount to remove
     public int lungeStaminaCost = 250; // Direct stamina amount to remove
     public int wiggleStaminaCost = 50; // Direct stamina amount to remove
+
     [Header("Wiggle Settings")]
     public float wiggleBackwardForce = 3f; // How much force each W press applies backwards
+
     [Header("Audio")]
     public AudioSource audioSource;
     public AudioClip successSound;
     public AudioClip failSound;
     public AudioClip pressSound;
+    public AudioClip jumpSound; // NEW: Specific sound for when whale jumps
+    public AudioClip lungeSound; // NEW: Specific sound for when whale lunges
+    public AudioClip wiggleSound; // NEW: Specific sound for wiggling (optional)
+    public AudioClip advanceSound; // NEW: Sound for advancing through tutorial dialogue
 
     private bool qteActive = false;
     private bool infoWindowActive = false;
@@ -111,6 +118,10 @@ public class QuickTimeEvent : MonoBehaviour
                 // Completion stage - wait for space to go to Scene 4
                 if (Input.GetKeyDown(qteKey))
                 {
+                    // Play advance sound
+                    if (audioSource && advanceSound)
+                        audioSource.PlayOneShot(advanceSound);
+
                     LoadScene4();
                 }
             }
@@ -119,11 +130,19 @@ public class QuickTimeEvent : MonoBehaviour
                 // Final stage - wait for W key to start wiggling
                 if (Input.GetKeyDown(KeyCode.W))
                 {
+                    // Play advance sound
+                    if (audioSource && advanceSound)
+                        audioSource.PlayOneShot(advanceSound);
+
                     HandleWiggleStart();
                 }
             }
             else if (Input.GetKeyDown(qteKey))
             {
+                // Play advance sound for tutorial progression
+                if (audioSource && advanceSound)
+                    audioSource.PlayOneShot(advanceSound);
+
                 if (isSecondStage)
                 {
                     // Second stage - handle seal lunge
@@ -331,6 +350,10 @@ public class QuickTimeEvent : MonoBehaviour
         // Add forward force in the direction whale is facing
         whaleRigidbody.AddForce(whale.transform.forward * forwardJumpForce, ForceMode.Impulse);
 
+        // NEW: Play jump sound when whale jumps
+        if (audioSource && jumpSound)
+            audioSource.PlayOneShot(jumpSound);
+
         Debug.Log("Whale jumped using physics forces!");
     }
 
@@ -353,6 +376,10 @@ public class QuickTimeEvent : MonoBehaviour
 
         // Make whale lunge forward
         whaleRigidbody.AddForce(whale.transform.forward * lungeForce, ForceMode.Impulse);
+
+        // NEW: Play lunge sound when whale lunges
+        if (audioSource && lungeSound)
+            audioSource.PlayOneShot(lungeSound);
 
         // Make seal fly backwards
         KnockSealBackwards();
@@ -525,9 +552,14 @@ public class QuickTimeEvent : MonoBehaviour
         Vector3 backwardDirection = -whale.transform.forward;
         whaleRigidbody.AddForce(backwardDirection * wiggleBackwardForce, ForceMode.Impulse);
 
-        // Play sound for feedback (reuse press sound)
-        if (audioSource && pressSound)
-            audioSource.PlayOneShot(pressSound);
+        // Play wiggle sound if available, otherwise use press sound
+        if (audioSource)
+        {
+            if (wiggleSound)
+                audioSource.PlayOneShot(wiggleSound);
+            else if (pressSound)
+                audioSource.PlayOneShot(pressSound);
+        }
 
         Debug.Log("Whale wiggles backwards!");
 
