@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Timeline;
 using UnityEngine.UIElements;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
@@ -215,6 +216,7 @@ public class Player : MonoBehaviour
     private void PlayerWins()
     {
         hasWon = true;
+        SceneManager.LoadScene("PersistentUI");
         Debug.Log("Player Wins! Whale is fully submerged!");
     }
 }

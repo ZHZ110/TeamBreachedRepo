@@ -21,6 +21,9 @@ EditorBuildSettings:
     path: Assets/Scenes/GameScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
+    path: Assets/Scenes/PersistentUI.unity
+    guid: 96d01dfdb5b80c8469b90ce67f0f1b0f
+  - enabled: 1
     path: Assets/Scenes/Scene2/Scene2.unity
     guid: b908a5c53fb1dc94d8b700e1ddd24c45
   m_configObjects: {}
