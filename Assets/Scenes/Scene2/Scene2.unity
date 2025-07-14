@@ -885,7 +885,7 @@ MonoBehaviour:
   CellWidth: 10
   CellHeight: 10
   AddGaps: 0
-  GoalPrefab: {fileID: 3942978291058208336, guid: f36536b56154a1a449a46bd4b0fed4b2, type: 3}
+  GoalPrefab: {fileID: 4834657589036475379, guid: 1ddcef2a1410d66448eee829a695d2dc, type: 3}
   GeyserPrefab: {fileID: 7605412649256743235, guid: 81b632b324a8e7746818fd43820f21df, type: 3}
   GeyserSpawnChance: 0.08
   GeyserHeight: 5
@@ -1711,6 +1711,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   CinemachineCameraTarget: {fileID: 6651456693058002273}
+  TurnSensitivity: 0.1
   TopClamp: 70
   BottomClamp: -30
   CameraAngleOverride: 0

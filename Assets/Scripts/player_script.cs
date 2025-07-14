@@ -13,6 +13,11 @@ public class Player : MonoBehaviour
     [SerializeField] private Wave wave3;
     [SerializeField] private BeachWaveController beachWaveController;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip wiggleSound;
+    [SerializeField] private AudioClip splashSound; // Optional: for S key splashing
+
     public enum SignalType
     {
         Wave_Stop,
@@ -22,13 +27,14 @@ public class Player : MonoBehaviour
     }
 
     public event EventHandler<OnStaminaChangedEventArgs> onStaminaChanged;
-    public class OnStaminaChangedEventArgs: EventArgs
+    public class OnStaminaChangedEventArgs : EventArgs
     {
         public float staminaNormalized;
     }
 
     private bool s_pressed;
     private bool w_pressed;
+    private bool w_pressed_last_frame = false; // Track previous frame state
     private int stamina = 1000;
     private int STAMINA_MAX = 1000;
     private float temperature = 0;
@@ -44,7 +50,27 @@ public class Player : MonoBehaviour
         childTransform.localPosition = Vector3.zero;
         childTransform.localRotation = Quaternion.identity;
         childTransform.localScale = Vector3.one;
+
+        // Get AudioSource if not assigned
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+
+            // If still null, try to find one on child objects
+            if (audioSource == null)
+            {
+                audioSource = GetComponentInChildren<AudioSource>();
+            }
+
+            // If still null, add one
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+                Debug.Log("Added AudioSource component to Player");
+            }
+        }
     }
+
     private void Update()
     {
         Vector2 inputVector = new Vector2(0, 0);
@@ -58,6 +84,12 @@ public class Player : MonoBehaviour
         {
             //Debug.Log("Wigging Tail!");
             w_pressed = true;
+
+            // Play wiggle sound when W is first pressed (not held)
+            if (!w_pressed_last_frame && audioSource && wiggleSound)
+            {
+                audioSource.PlayOneShot(wiggleSound);
+            }
 
             Vector3 baseMovement = new Vector3(-2.0f, 0f, 0f) * moveSpeed * Time.deltaTime;
 
@@ -92,7 +124,8 @@ public class Player : MonoBehaviour
 
             transform.position += baseMovement;
             stamina = stamina - 1;
-            onStaminaChanged?.Invoke(this, new OnStaminaChangedEventArgs{
+            onStaminaChanged?.Invoke(this, new OnStaminaChangedEventArgs
+            {
                 staminaNormalized = (float)stamina / STAMINA_MAX
             });
         }
@@ -100,9 +133,20 @@ public class Player : MonoBehaviour
         {
             w_pressed = false;
         }
+
+        // Update last frame state for next frame
+        w_pressed_last_frame = w_pressed;
+
         if (Input.GetKey(KeyCode.S))
         {
             s_pressed = true;
+
+            // Play splash sound when S is first pressed (optional)
+            if (Input.GetKeyDown(KeyCode.S) && audioSource && splashSound)
+            {
+                audioSource.PlayOneShot(splashSound);
+            }
+
             --temperature;
             --stamina;
             onStaminaChanged?.Invoke(this, new OnStaminaChangedEventArgs
@@ -150,7 +194,7 @@ public class Player : MonoBehaviour
         {
             wave3.SetSignal(SignalType.Echolocation, transform.Find("Capsule").position);
         }
-        if(taken_by_wave)
+        if (taken_by_wave)
         {
             // might need to modify this part in the future
             transform.position = Vector3.MoveTowards(transform.position,

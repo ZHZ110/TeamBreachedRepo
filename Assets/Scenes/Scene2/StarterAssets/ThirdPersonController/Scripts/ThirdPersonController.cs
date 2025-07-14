@@ -19,8 +19,8 @@ namespace StarterAssets
         public float SprintSpeed = 5.335f;
 
         [Tooltip("How fast the character turns to face movement direction")]
-        [Range(0.0f, 0.3f)]
-        public float RotationSmoothTime = 0.3f;
+        [Range(0.0f, 0.8f)]
+        public float RotationSmoothTime = 0.8f;
 
         [Tooltip("Acceleration and deceleration")]
         public float SpeedChangeRate = 10.0f;
@@ -66,6 +66,10 @@ namespace StarterAssets
         [Header("Cinemachine")]
         [Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
         public GameObject CinemachineCameraTarget;
+
+        [Tooltip("Sensitivity of turning - lower values make smaller turns")]
+        [Range(0.1f, 2.0f)]
+        public float TurnSensitivity = 1.0f;
 
         [Tooltip("How far in degrees can you move the camera up")]
         public float TopClamp = 70.0f;
@@ -320,7 +324,11 @@ namespace StarterAssets
             // Always update target rotation when there's input (even if not moving)
             if (_input.move != Vector2.zero)
             {
-                _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
+                // Apply turn sensitivity to reduce the amount of turning
+                Vector3 scaledInput = new Vector3(_input.move.x * TurnSensitivity, 0.0f, _input.move.y * TurnSensitivity);
+                Vector3 scaledDirection = scaledInput.normalized;
+
+                _targetRotation = Mathf.Atan2(scaledDirection.x, scaledDirection.z) * Mathf.Rad2Deg +
                                   _mainCamera.transform.eulerAngles.y;
             }
 

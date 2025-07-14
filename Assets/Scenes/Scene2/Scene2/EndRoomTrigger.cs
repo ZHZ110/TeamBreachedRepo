@@ -182,7 +182,7 @@ public class EndRoomTrigger : MonoBehaviour
                 }
 
                 // Add spinning effect to coin
-                coin.transform.Rotate(0, 180 * Time.deltaTime, 0);
+                coin.transform.Rotate(0, 0, 180 * Time.deltaTime); // Rotating around Z-axis
 
                 // Optional: Add floating/bobbing effect
                 float bob = Mathf.Sin(Time.time * 3f) * 0.1f;
