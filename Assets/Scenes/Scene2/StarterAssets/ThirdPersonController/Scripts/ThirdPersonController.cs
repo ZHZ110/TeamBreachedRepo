@@ -126,6 +126,15 @@ namespace StarterAssets
         private int _animIDJump;
         private int _animIDFreeFall;
         private int _animIDMotionSpeed;
+        private int _animIDIsMoving;
+        private int _animIDIsAscending;
+        private int _animIDIsDescending;
+        private int _animIDIsTurningLeft;
+        private int _animIDIsTurningRight;
+        private bool _playingAscendAnim = false;
+        private bool _playingDescendAnim = false;
+        private float _verticalAnimTimer = 0f;
+        private float _verticalAnimDuration = 1.0f;
 
 #if ENABLE_INPUT_SYSTEM 
         private PlayerInput _playerInput;
@@ -164,6 +173,8 @@ namespace StarterAssets
             _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
 
             _hasAnimator = TryGetComponent(out _animator);
+            ////Debug.Log($"In Start() - _hasAnimator: {_hasAnimator}, _animator: {_animator}");
+
             _controller = GetComponent<CharacterController>();
             _input = GetComponent<StarterAssetsInputs>();
 
@@ -173,7 +184,7 @@ namespace StarterAssets
 #if ENABLE_INPUT_SYSTEM
             _playerInput = GetComponent<PlayerInput>();
 #else
-            //Debug.LogError("Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
+            //////Debug.LogError("Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
 #endif
 
             AssignAnimationIDs();
@@ -184,6 +195,23 @@ namespace StarterAssets
 
             // Initialize target position for floating movement
             _targetVerticalPosition = transform.position;
+
+
+            ////Debug.Log($"Direct GetComponent: {GetComponent<Animator>()}");
+            ////Debug.Log($"GameObject.GetComponent: {gameObject.GetComponent<Animator>()}");
+
+            // Force a re-check
+            _hasAnimator = TryGetComponent(out _animator);
+            ////Debug.Log($"After force re-check - _hasAnimator: {_hasAnimator}");
+
+            // Try getting all components to see what's actually there
+            Component[] allComponents = GetComponents<Component>();
+            ////Debug.Log($"All components on this GameObject:");
+            foreach (Component comp in allComponents)
+            {
+                ////Debug.Log($"- {comp.GetType().Name}");
+            }
+
         }
 
         private void Update()
@@ -216,6 +244,11 @@ namespace StarterAssets
             _animIDJump = Animator.StringToHash("Jump");
             _animIDFreeFall = Animator.StringToHash("FreeFall");
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
+            _animIDIsMoving = Animator.StringToHash("IsMoving");
+            _animIDIsAscending = Animator.StringToHash("IsAscending");
+            _animIDIsDescending = Animator.StringToHash("IsDescending");
+            _animIDIsTurningLeft = Animator.StringToHash("IsTurningLeft");
+            _animIDIsTurningRight = Animator.StringToHash("IsTurningRight");
         }
 
         private void GroundedCheck()
@@ -246,6 +279,13 @@ namespace StarterAssets
 
         private void Move()
         {
+
+            // More detailed debug
+            Animator testAnimator = GetComponent<Animator>();
+            ////Debug.Log($"Manual GetComponent result: {testAnimator != null}");
+            ////Debug.Log($"TryGetComponent result: {TryGetComponent(out Animator tempAnimator)}");
+            ////Debug.Log($"_hasAnimator: {_hasAnimator}, _animator is null: {_animator == null}");
+
             // set target speed based on move speed, sprint speed and if sprint is pressed
             float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
 
@@ -292,7 +332,7 @@ namespace StarterAssets
                     swimmingAudioSource.loop = true;
                     swimmingAudioSource.pitch = isSprinting ? SprintSwimPitch : NormalSwimPitch;
                     swimmingAudioSource.Play();
-                    //Debug.Log("Swimming audio started");
+                    //////Debug.Log("Swimming audio started");
                 }
                 _isSwimming = true;
             }
@@ -310,7 +350,7 @@ namespace StarterAssets
                 if (swimmingAudioSource)
                 {
                     swimmingAudioSource.Stop();
-                    //Debug.Log($"Swimming audio stopped. Reason: {(isPushingRock ? "Pushing rock" : "Not moving")}");
+                    //////Debug.Log($"Swimming audio stopped. Reason: {(isPushingRock ? "Pushing rock" : "Not moving")}");
                 }
                 _isSwimming = false;
             }
@@ -324,12 +364,17 @@ namespace StarterAssets
             // Always update target rotation when there's input (even if not moving)
             if (_input.move != Vector2.zero)
             {
-                // Apply turn sensitivity to reduce the amount of turning
-                Vector3 scaledInput = new Vector3(_input.move.x * TurnSensitivity, 0.0f, _input.move.y * TurnSensitivity);
-                Vector3 scaledDirection = scaledInput.normalized;
+                // Apply turn sensitivity to the final rotation calculation:
+                float baseTargetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + _mainCamera.transform.eulerAngles.y;
 
-                _targetRotation = Mathf.Atan2(scaledDirection.x, scaledDirection.z) * Mathf.Rad2Deg +
-                                  _mainCamera.transform.eulerAngles.y;
+                // Calculate the difference between current rotation and target rotation
+                float rotationDifference = Mathf.DeltaAngle(transform.eulerAngles.y, baseTargetRotation);
+
+                // Apply turn sensitivity to reduce the rotation amount
+                float scaledRotationDifference = rotationDifference * TurnSensitivity;
+
+                // Set the new target rotation
+                _targetRotation = transform.eulerAngles.y + scaledRotationDifference;
             }
 
             // Always smoothly rotate towards target rotation (whether moving or stationary)
@@ -357,7 +402,7 @@ namespace StarterAssets
                 if (collisionFlags == CollisionFlags.Above && verticalMovement > 0)
                 {
                     _isMovingVertically = false;
-                    //Debug.Log("Hit ceiling, stopping upward movement");
+                    //////Debug.Log("Hit ceiling, stopping upward movement");
                 }
 
                 _verticalVelocity = 0f;
@@ -379,6 +424,69 @@ namespace StarterAssets
             {
                 _animator.SetFloat(_animIDSpeed, _animationBlend);
                 _animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
+
+                // Handle vertical animation timing
+                bool isAscending = _isMovingVertically && _targetVerticalPosition.y > transform.position.y;
+                bool isDescending = _isMovingVertically && _targetVerticalPosition.y < transform.position.y;
+
+                // Start animations
+                if (isAscending && !_playingAscendAnim)
+                {
+                    _playingAscendAnim = true;
+                    _verticalAnimTimer = 0f;
+                    //Debug.Log("Started Ascend Animation");
+                }
+                if (isDescending && !_playingDescendAnim)
+                {
+                    _playingDescendAnim = true;
+                    _verticalAnimTimer = 0f;
+                    //Debug.Log("Started Descend Animation");
+                }
+
+                // Update timer
+                if (_playingAscendAnim || _playingDescendAnim)
+                {
+                    _verticalAnimTimer += Time.deltaTime;
+                }
+
+                // Stop animations after duration
+                if (_verticalAnimTimer >= _verticalAnimDuration)
+                {
+                    _playingAscendAnim = false;
+                    _playingDescendAnim = false;
+                    _verticalAnimTimer = 0f;
+                    //Debug.Log("Stopped vertical animations - timer expired");
+                }
+
+                // Prevent IsMoving from interrupting vertical animations
+                bool isMoving = _input.move != Vector2.zero && !_playingAscendAnim && !_playingDescendAnim;
+
+                _animator.SetBool(_animIDIsMoving, isMoving);
+                _animator.SetBool(_animIDIsAscending, _playingAscendAnim);
+                _animator.SetBool(_animIDIsDescending, _playingDescendAnim);
+
+                //Debug.Log($"IsMoving: {isMoving}, PlayingAscend: {_playingAscendAnim}, PlayingDescend: {_playingDescendAnim}, Timer: {_verticalAnimTimer:F2}");
+
+                // Detect turning
+                bool isTurningLeft = false;
+                bool isTurningRight = false;
+
+                if (_input.move != Vector2.zero)
+                {
+                    // Calculate turn direction based on input
+                    float turnInput = _input.move.x; // Assuming x-axis controls turning
+
+                    isTurningLeft = turnInput < -0.1f;   // Turning left (A key or left stick)
+                    isTurningRight = turnInput > 0.1f;   // Turning right (D key or right stick)
+                }
+
+                _animator.SetBool(_animIDIsTurningLeft, isTurningLeft);
+                _animator.SetBool(_animIDIsTurningRight, isTurningRight);
+
+                float horizontalInput = _input.move.x;
+                // Limit the input to prevent full turning - try different values
+                horizontalInput = Mathf.Clamp(horizontalInput, -0.5f, 0.5f);
+                _animator.SetFloat("Horizontal", horizontalInput);
             }
         }
 
