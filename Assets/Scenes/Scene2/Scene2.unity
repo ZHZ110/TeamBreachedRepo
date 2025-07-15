@@ -1495,6 +1495,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: orca
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 36436de09e174f748be04f38d8b75727, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 36436de09e174f748be04f38d8b75727, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 5a116cab8443ae149880ea010ed0789b, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1690,7 +1698,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MoveSpeed: 5
   SprintSpeed: 10
-  RotationSmoothTime: 0.3
+  RotationSmoothTime: 0.4
   SpeedChangeRate: 10
   LandingAudioClip: {fileID: 0}
   FootstepAudioClips: []
@@ -1711,7 +1719,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   CinemachineCameraTarget: {fileID: 6651456693058002273}
-  TurnSensitivity: 0.1
+  TurnSensitivity: 0.5
   TopClamp: 70
   BottomClamp: -30
   CameraAngleOverride: 0
@@ -1840,6 +1848,7 @@ GameObject:
   - component: {fileID: 3044453691408787168}
   - component: {fileID: 7870009777581364827}
   - component: {fileID: 7870009777581364828}
+  - component: {fileID: 7870009777581364830}
   m_Layer: 8
   m_Name: PlayerCapsule
   m_TagString: Player
@@ -1946,7 +1955,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.4
+  m_Volume: 1
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -2149,6 +2158,28 @@ MonoBehaviour:
   maxHearingDistance: 20
   maxVolumeDistance: 5
   waterfallSoundVolume: 1
+--- !u!95 &7870009777581364830
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1349008042286916666}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 36436de09e174f748be04f38d8b75727, type: 3}
+  m_Controller: {fileID: 9100000, guid: 5a116cab8443ae149880ea010ed0789b, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &8823342814437284487
 PrefabInstance:
   m_ObjectHideFlags: 0
