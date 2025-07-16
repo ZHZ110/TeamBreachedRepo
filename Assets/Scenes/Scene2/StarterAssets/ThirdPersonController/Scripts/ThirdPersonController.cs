@@ -135,6 +135,8 @@ namespace StarterAssets
         private bool _playingDescendAnim = false;
         private float _verticalAnimTimer = 0f;
         private float _verticalAnimDuration = 1.0f;
+        private float _smoothedHorizontalInput = 0f;
+        private float _previousHorizontalInput = 0f;
 
 #if ENABLE_INPUT_SYSTEM 
         private PlayerInput _playerInput;
@@ -483,10 +485,13 @@ namespace StarterAssets
                 _animator.SetBool(_animIDIsTurningLeft, isTurningLeft);
                 _animator.SetBool(_animIDIsTurningRight, isTurningRight);
 
-                float horizontalInput = _input.move.x;
-                // Limit the input to prevent full turning - try different values
-                horizontalInput = Mathf.Clamp(horizontalInput, -0.5f, 0.5f);
-                _animator.SetFloat("Horizontal", horizontalInput);
+                float targetHorizontalInput = _input.move.x;
+
+                // Use faster return to center when no horizontal input
+                float lerpSpeed = (targetHorizontalInput == 0) ? 10f : 5f;
+                _smoothedHorizontalInput = Mathf.Lerp(_smoothedHorizontalInput, targetHorizontalInput, Time.deltaTime * lerpSpeed);
+
+                _animator.SetFloat("Horizontal", _smoothedHorizontalInput);
             }
         }
 

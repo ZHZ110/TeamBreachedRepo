@@ -280,7 +280,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: orca
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5866666021909216657, guid: 36436de09e174f748be04f38d8b75727, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -2683,6 +2684,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4588337265022097626, guid: 975a2fdaf66ddf447bb88c34b2f511a7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1009084830658967235}
+    - targetCorrespondingSourceObject: {fileID: 4588337265022097626, guid: 975a2fdaf66ddf447bb88c34b2f511a7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1009084830658967236}
   m_SourcePrefab: {fileID: 100100000, guid: 975a2fdaf66ddf447bb88c34b2f511a7, type: 3}
 --- !u!1 &1009084830658967218 stripped
 GameObject:
@@ -2827,6 +2831,7 @@ MonoBehaviour:
   lungeSound: {fileID: 8300000, guid: f03db2ee9e153ff49b019db79306381a, type: 3}
   wiggleSound: {fileID: 8300000, guid: 8782f2fed705ad5428da1bf77a629359, type: 3}
   advanceSound: {fileID: 8300000, guid: c7d83424036e58045b7b7c73f99f2f02, type: 3}
+  whaleAnimator: {fileID: 0}
 --- !u!82 &1009084830658967235
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2924,6 +2929,28 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!95 &1009084830658967236
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1009084830658967218}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 36436de09e174f748be04f38d8b75727, type: 3}
+  m_Controller: {fileID: 9100000, guid: f5fe9ffc88b822f47a42fdab29396f73, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!33 &1652485828397255765
 MeshFilter:
   m_ObjectHideFlags: 0

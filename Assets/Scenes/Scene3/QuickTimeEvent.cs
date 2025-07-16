@@ -80,6 +80,9 @@ public class QuickTimeEvent : MonoBehaviour
     private Rigidbody whaleRigidbody;
     private Coroutine currentStaminaDrain; // Track current stamina drain coroutine
 
+    [Header("Animation References")]
+    public Animator whaleAnimator; // Assign the whale's animator component
+
     void Start()
     {
         // Hide QTE panel initially, but show info window
@@ -95,6 +98,12 @@ public class QuickTimeEvent : MonoBehaviour
             {
                 staminaSystem = whale.GetComponent<WhaleStaminaSystem>();
             }
+        }
+
+        // Get whale animator
+        if (whale && whaleAnimator == null)
+        {
+            whaleAnimator = whale.GetComponent<Animator>();
         }
 
         // Initialize progress bar
@@ -169,6 +178,34 @@ public class QuickTimeEvent : MonoBehaviour
                 PerformWiggleBack();
             }
         }
+
+        // DEBUG: Test animations independently
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            Debug.Log("Testing arch back animation manually");
+            TriggerArchBackAnimation();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            Debug.Log("Testing side wiggle animation manually");
+            TriggerSideWiggleAnimation();
+        }
+
+        // DEBUG: Check current animation state
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            if (whaleAnimator)
+            {
+                AnimatorStateInfo stateInfo = whaleAnimator.GetCurrentAnimatorStateInfo(0);
+                Debug.Log($"Current animation state: {stateInfo.fullPathHash} - Is transitioning: {whaleAnimator.IsInTransition(0)}");
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            CheckAnimatorSetup();
+        }
     }
 
     public void ShowInfoWindow()
@@ -180,7 +217,7 @@ public class QuickTimeEvent : MonoBehaviour
         // Show info window
         if (infoWindow) infoWindow.SetActive(true);
 
-        Debug.Log("Info window displayed. Press Space to continue...");
+        //Debug.Log("Info window displayed. Press Space to continue...");
     }
 
     public void StartQuickTimeEvent()
@@ -203,7 +240,7 @@ public class QuickTimeEvent : MonoBehaviour
         if (instructionText)
             instructionText.text = $"Press {qteKey} rapidly! ({requiredPresses} times)";
 
-        Debug.Log("Quick Time Event Started!");
+        //Debug.Log("Quick Time Event Started!");
     }
 
     void HandleQTEInput()
@@ -230,7 +267,7 @@ public class QuickTimeEvent : MonoBehaviour
         if (audioSource && pressSound)
             audioSource.PlayOneShot(pressSound);
 
-        Debug.Log($"QTE Press: {currentPresses}/{requiredPresses}");
+        //Debug.Log($"QTE Press: {currentPresses}/{requiredPresses}");
 
         // Check if QTE is completed successfully
         if (currentPresses >= requiredPresses)
@@ -280,7 +317,7 @@ public class QuickTimeEvent : MonoBehaviour
 
         if (success)
         {
-            Debug.Log("QTE Success!");
+            //Debug.Log("QTE Success!");
 
             // Play success sound
             if (audioSource && successSound)
@@ -289,7 +326,8 @@ public class QuickTimeEvent : MonoBehaviour
             if (isSecondStage)
             {
                 // Second stage success - perform lunge
-                PerformWhaleLunge();
+                TriggerArchBackAnimation();
+                Invoke("PerformWhaleLunge", 0.3f);
 
                 // After successful lunge, show final info after a delay
                 Invoke("ShowFinalInfo", 2f);
@@ -297,7 +335,8 @@ public class QuickTimeEvent : MonoBehaviour
             else
             {
                 // First stage success - perform jump
-                PerformWhaleJump();
+                TriggerArchBackAnimation();
+                Invoke("PerformWhaleJump", 0.3f);
 
                 // After successful jump, show success info after a delay
                 Invoke("ShowSuccessInfo", 2f);
@@ -305,7 +344,7 @@ public class QuickTimeEvent : MonoBehaviour
         }
         else
         {
-            Debug.Log("QTE Failed! Returning to info window...");
+            //Debug.Log("QTE Failed! Returning to info window...");
 
             // Play fail sound
             if (audioSource && failSound)
@@ -331,7 +370,7 @@ public class QuickTimeEvent : MonoBehaviour
         // Check stamina if system exists
         if (staminaSystem && !staminaSystem.HasStamina())
         {
-            Debug.Log("Not enough stamina to jump!");
+            //Debug.Log("Not enough stamina to jump!");
             return;
         }
 
@@ -354,7 +393,7 @@ public class QuickTimeEvent : MonoBehaviour
         if (audioSource && jumpSound)
             audioSource.PlayOneShot(jumpSound);
 
-        Debug.Log("Whale jumped using physics forces!");
+        //Debug.Log("Whale jumped using physics forces!");
     }
 
     void PerformWhaleLunge()
@@ -364,7 +403,7 @@ public class QuickTimeEvent : MonoBehaviour
         // Check stamina if system exists
         if (staminaSystem && !staminaSystem.HasStamina())
         {
-            Debug.Log("Not enough stamina to lunge!");
+            //Debug.Log("Not enough stamina to lunge!");
             return;
         }
 
@@ -384,32 +423,32 @@ public class QuickTimeEvent : MonoBehaviour
         // Make seal fly backwards
         KnockSealBackwards();
 
-        Debug.Log("Whale lunges forward at the seal!");
+        //Debug.Log("Whale lunges forward at the seal!");
     }
 
     void ReduceStaminaDirectly(int staminaAmount, string actionName)
     {
         if (staminaSystem == null)
         {
-            Debug.LogError("Stamina system is null! Make sure it's assigned in the inspector.");
+            //Debug.LogError("Stamina system is null! Make sure it's assigned in the inspector.");
             return;
         }
 
         int currentStamina = staminaSystem.GetStamina();
         int newStamina = Mathf.Max(0, currentStamina - staminaAmount);
 
-        Debug.Log($"{actionName} reducing stamina by {staminaAmount} (was {currentStamina}, now will be {newStamina})");
+        //Debug.Log($"{actionName} reducing stamina by {staminaAmount} (was {currentStamina}, now will be {newStamina})");
 
         // Use reflection to directly set the stamina value
         var field = typeof(WhaleStaminaSystem).GetField("currentStamina", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         if (field != null)
         {
             field.SetValue(staminaSystem, newStamina);
-            Debug.Log($"{actionName} stamina reduction complete. Current: {staminaSystem.GetStamina()}");
+            //Debug.Log($"{actionName} stamina reduction complete. Current: {staminaSystem.GetStamina()}");
         }
         else
         {
-            Debug.LogError("Could not access currentStamina field. Using fallback method.");
+            //Debug.LogError("Could not access currentStamina field. Using fallback method.");
             // Fallback to the timed drain method
             StartCoroutine(InstantStaminaDrain(staminaAmount, actionName));
         }
@@ -419,7 +458,7 @@ public class QuickTimeEvent : MonoBehaviour
     {
         if (staminaSystem == null)
         {
-            Debug.LogError("Stamina system is null!");
+            //Debug.LogError("Stamina system is null!");
             return;
         }
 
@@ -428,11 +467,11 @@ public class QuickTimeEvent : MonoBehaviour
         if (field != null)
         {
             field.SetValue(staminaSystem, 1000); // Set to max stamina
-            Debug.Log("Stamina restored to full! Current: " + staminaSystem.GetStamina());
+            //Debug.Log("Stamina restored to full! Current: " + staminaSystem.GetStamina());
         }
         else
         {
-            Debug.LogError("Could not access currentStamina field to restore stamina.");
+            //Debug.LogError("Could not access currentStamina field to restore stamina.");
         }
     }
 
@@ -453,14 +492,14 @@ public class QuickTimeEvent : MonoBehaviour
         // Clear the current drain reference
         currentStaminaDrain = null;
 
-        Debug.Log($"{actionName} stamina reduction complete. Current: {staminaSystem.GetStamina()}");
+        //Debug.Log($"{actionName} stamina reduction complete. Current: {staminaSystem.GetStamina()}");
     }
 
     void KnockSealBackwards()
     {
         if (!seal)
         {
-            Debug.LogWarning("No seal object assigned!");
+            //Debug.LogWarning("No seal object assigned!");
             return;
         }
 
@@ -469,7 +508,7 @@ public class QuickTimeEvent : MonoBehaviour
 
         if (!sealRigidbody)
         {
-            Debug.LogWarning("Seal needs a Rigidbody component to be knocked back!");
+            //Debug.LogWarning("Seal needs a Rigidbody component to be knocked back!");
             return;
         }
 
@@ -483,7 +522,7 @@ public class QuickTimeEvent : MonoBehaviour
         // Apply force to seal
         sealRigidbody.AddForce(knockbackDirection * sealKnockbackForce, ForceMode.Impulse);
 
-        Debug.Log("Seal knocked backwards into the water!");
+        //Debug.Log("Seal knocked backwards into the water!");
     }
 
     void ReturnToInfoWindow()
@@ -498,7 +537,7 @@ public class QuickTimeEvent : MonoBehaviour
         // Show info window again for retry
         ShowInfoWindow();
 
-        Debug.Log("Ready to try breaching again!");
+        //Debug.Log("Ready to try breaching again!");
     }
 
     void ShowSuccessInfo()
@@ -513,7 +552,7 @@ public class QuickTimeEvent : MonoBehaviour
         // Show the info window again
         ShowInfoWindow();
 
-        Debug.Log("Success info displayed. Ready for seal lunge!");
+        //Debug.Log("Success info displayed. Ready for seal lunge!");
     }
 
     void ShowFinalInfo()
@@ -529,7 +568,7 @@ public class QuickTimeEvent : MonoBehaviour
         // Show the info window again
         ShowInfoWindow();
 
-        Debug.Log("Final info displayed. Press W to start wiggling back to water!");
+        //Debug.Log("Final info displayed. Press W to start wiggling back to water!");
     }
 
     void HandleWiggleStart()
@@ -541,12 +580,15 @@ public class QuickTimeEvent : MonoBehaviour
         // Enable wiggle mode
         wiggleMode = true;
 
-        Debug.Log("Wiggle mode activated! Press W repeatedly to move back to water.");
+        //Debug.Log("Wiggle mode activated! Press W repeatedly to move back to water.");
     }
 
     void PerformWiggleBack()
     {
         if (!whaleRigidbody) return;
+
+        // Trigger side wiggle animation
+        TriggerSideWiggleAnimation();
 
         // Move whale backwards (opposite of forward direction)
         Vector3 backwardDirection = -whale.transform.forward;
@@ -561,7 +603,7 @@ public class QuickTimeEvent : MonoBehaviour
                 audioSource.PlayOneShot(pressSound);
         }
 
-        Debug.Log("Whale wiggles backwards!");
+        //Debug.Log("Whale wiggles backwards!");
 
         // Add slight stamina cost for wiggling - direct reduction
         if (staminaSystem)
@@ -586,7 +628,7 @@ public class QuickTimeEvent : MonoBehaviour
         // Only check for water if we're in wiggle mode
         if (wiggleMode && other.CompareTag("Water"))
         {
-            Debug.Log("Whale returned to water!");
+            //Debug.Log("Whale returned to water!");
 
             // Restore stamina to full when returning to water
             RestoreFullStamina();
@@ -619,12 +661,12 @@ public class QuickTimeEvent : MonoBehaviour
         // Show the info window again
         ShowInfoWindow();
 
-        Debug.Log("Breaching tutorial complete! Press Space to continue to Scene 4.");
+        //Debug.Log("Breaching tutorial complete! Press Space to continue to Scene 4.");
     }
 
     void LoadScene4()
     {
-        Debug.Log("Loading Scene 4...");
+        //Debug.Log("Loading Scene 4...");
         UnityEngine.SceneManagement.SceneManager.LoadScene("Scene4");
     }
 
@@ -652,12 +694,182 @@ public class QuickTimeEvent : MonoBehaviour
         if (instructionText)
             instructionText.text = $"Press {qteKey} rapidly to lunge! ({requiredPresses} times)";
 
-        Debug.Log("Lunge QTE Started!");
+        //Debug.Log("Lunge QTE Started!");
     }
 
     // Public method to trigger the info window (call this from other scripts)
     public void TriggerJumpOpportunity()
     {
         ShowInfoWindow();
+    }
+
+    void TriggerArchBackAnimation()
+    {
+        Debug.Log("=== ARCH BACK ANIMATION DEBUG START ===");
+
+        if (whaleAnimator == null)
+        {
+            Debug.LogError("whaleAnimator is NULL! Check if whale has Animator component.");
+            return;
+        }
+
+        Debug.Log($"Animator found on: {whaleAnimator.gameObject.name}");
+        Debug.Log($"Animator enabled: {whaleAnimator.enabled}");
+        Debug.Log($"Animator gameObject active: {whaleAnimator.gameObject.activeInHierarchy}");
+
+        // Check if controller is assigned
+        if (whaleAnimator.runtimeAnimatorController == null)
+        {
+            Debug.LogError("No Animator Controller assigned to whale!");
+            return;
+        }
+
+        Debug.Log($"Animator Controller: {whaleAnimator.runtimeAnimatorController.name}");
+
+        // Check if parameter exists
+        bool hasParameter = false;
+        Debug.Log("Checking parameters...");
+        foreach (AnimatorControllerParameter param in whaleAnimator.parameters)
+        {
+            Debug.Log($"Found parameter: {param.name} (Type: {param.type})");
+            if (param.name == "DoArchBack")
+            {
+                hasParameter = true;
+                Debug.Log($"DoArchBack parameter found - Type: {param.type}");
+            }
+        }
+
+        if (!hasParameter)
+        {
+            Debug.LogError("DoArchBack parameter NOT found in animator controller!");
+            return;
+        }
+
+        // Get current state before trigger
+        AnimatorStateInfo beforeState = whaleAnimator.GetCurrentAnimatorStateInfo(0);
+        Debug.Log($"Current state before trigger: {beforeState.shortNameHash} (Length: {beforeState.length})");
+
+        // Set the trigger
+        whaleAnimator.SetTrigger("DoArchBack");
+        Debug.Log("DoArchBack trigger set successfully");
+
+        // Check state after trigger (with delay)
+        StartCoroutine(CheckAnimationAfterTrigger("DoArchBack", "ArchBack"));
+
+        Debug.Log("=== ARCH BACK ANIMATION DEBUG END ===");
+    }
+
+    void TriggerSideWiggleAnimation()
+    {
+        Debug.Log("=== SIDE WIGGLE ANIMATION DEBUG START ===");
+
+        if (whaleAnimator == null)
+        {
+            Debug.LogError("whaleAnimator is NULL! Check if whale has Animator component.");
+            return;
+        }
+
+        Debug.Log($"Animator found on: {whaleAnimator.gameObject.name}");
+        Debug.Log($"Animator enabled: {whaleAnimator.enabled}");
+
+        // Check if controller is assigned
+        if (whaleAnimator.runtimeAnimatorController == null)
+        {
+            Debug.LogError("No Animator Controller assigned to whale!");
+            return;
+        }
+
+        // Check if parameter exists
+        bool hasParameter = false;
+        foreach (AnimatorControllerParameter param in whaleAnimator.parameters)
+        {
+            if (param.name == "DoSideWiggle")
+            {
+                hasParameter = true;
+                Debug.Log($"DoSideWiggle parameter found - Type: {param.type}");
+            }
+        }
+
+        if (!hasParameter)
+        {
+            Debug.LogError("DoSideWiggle parameter NOT found in animator controller!");
+            return;
+        }
+
+        // Get current state before trigger
+        AnimatorStateInfo beforeState = whaleAnimator.GetCurrentAnimatorStateInfo(0);
+        Debug.Log($"Current state before trigger: {beforeState.shortNameHash}");
+
+        // Set the trigger
+        whaleAnimator.SetTrigger("DoSideWiggle");
+        Debug.Log("DoSideWiggle trigger set successfully");
+
+        // Check state after trigger (with delay)
+        StartCoroutine(CheckAnimationAfterTrigger("DoSideWiggle", "SideWiggle"));
+
+        Debug.Log("=== SIDE WIGGLE ANIMATION DEBUG END ===");
+    }
+
+    IEnumerator CheckAnimationAfterTrigger(string triggerName, string expectedStateName)
+    {
+        yield return new WaitForSeconds(0.1f);
+
+        if (whaleAnimator)
+        {
+            AnimatorStateInfo stateInfo = whaleAnimator.GetCurrentAnimatorStateInfo(0);
+            Debug.Log($"=== POST-TRIGGER CHECK FOR {triggerName} ===");
+            Debug.Log($"Current state hash: {stateInfo.shortNameHash}");
+            Debug.Log($"Is in transition: {whaleAnimator.IsInTransition(0)}");
+            Debug.Log($"Is in {expectedStateName} state: {stateInfo.IsName(expectedStateName)}");
+            Debug.Log($"Animation length: {stateInfo.length}");
+            Debug.Log($"Animation normalized time: {stateInfo.normalizedTime}");
+
+            if (whaleAnimator.IsInTransition(0))
+            {
+                AnimatorTransitionInfo transitionInfo = whaleAnimator.GetAnimatorTransitionInfo(0);
+                Debug.Log($"Transition progress: {transitionInfo.normalizedTime}");
+            }
+        }
+    }
+
+    // Add this method to check animator setup
+    void CheckAnimatorSetup()
+    {
+        Debug.Log("=== ANIMATOR SETUP CHECK ===");
+
+        if (whale == null)
+        {
+            Debug.LogError("Whale GameObject is null!");
+            return;
+        }
+
+        Animator animator = whale.GetComponent<Animator>();
+        if (animator == null)
+        {
+            Debug.LogError("No Animator component found on whale!");
+            return;
+        }
+
+        Debug.Log($"Animator found on: {animator.gameObject.name}");
+        Debug.Log($"Animator enabled: {animator.enabled}");
+        Debug.Log($"Apply Root Motion: {animator.applyRootMotion}");
+        Debug.Log($"Update Mode: {animator.updateMode}");
+        Debug.Log($"Culling Mode: {animator.cullingMode}");
+
+        if (animator.runtimeAnimatorController == null)
+        {
+            Debug.LogError("No Animator Controller assigned!");
+            return;
+        }
+
+        Debug.Log($"Controller: {animator.runtimeAnimatorController.name}");
+        Debug.Log($"Parameter count: {animator.parameters.Length}");
+
+        foreach (AnimatorControllerParameter param in animator.parameters)
+        {
+            Debug.Log($"Parameter: {param.name} (Type: {param.type})");
+        }
+
+        Debug.Log("=== ANIMATOR SETUP CHECK COMPLETE ===");
     }
 }
