@@ -52,6 +52,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: seal Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 7281173368730338876, guid: 6b6b730d5c54ffe439148e18a49ab47d, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: eae7670220634f64ab94147af5e3be47, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

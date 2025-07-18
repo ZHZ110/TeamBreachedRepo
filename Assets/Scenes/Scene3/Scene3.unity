@@ -943,6 +943,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: seal
       objectReference: {fileID: 0}
+    - target: {fileID: 7281173368730338876, guid: 6b6b730d5c54ffe439148e18a49ab47d, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3145,6 +3149,7 @@ GameObject:
   - component: {fileID: 5552504265233866027}
   - component: {fileID: 2895974548722908745}
   - component: {fileID: 5552504265233866028}
+  - component: {fileID: 5552504265233866029}
   m_Layer: 0
   m_Name: Seal
   m_TagString: Untagged
@@ -3224,6 +3229,28 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!95 &5552504265233866029
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3942978290675153661}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: d411b085595edcf4a9e33f36d6cbb90a, type: 3}
+  m_Controller: {fileID: 9100000, guid: eae7670220634f64ab94147af5e3be47, type: 2}
+  m_CullingMode: 1
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 1
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &8823342814437284487
 PrefabInstance:
   m_ObjectHideFlags: 0
