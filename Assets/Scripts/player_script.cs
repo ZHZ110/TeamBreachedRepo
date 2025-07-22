@@ -17,6 +17,10 @@ public class Player : MonoBehaviour
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip wiggleSound;
     [SerializeField] private AudioClip splashSound; // Optional: for S key splashing
+    [SerializeField] private AudioClip archBackSound; // Optional: for A key arching
+
+    [Header("Animation")]
+    [SerializeField] private Animator whaleAnimator; // Reference to whale's animator
 
     public enum SignalType
     {
@@ -69,6 +73,21 @@ public class Player : MonoBehaviour
                 Debug.Log("Added AudioSource component to Player");
             }
         }
+
+        // Get whale animator if not assigned
+        if (whaleAnimator == null)
+        {
+            whaleAnimator = GetComponent<Animator>();
+            if (whaleAnimator == null)
+            {
+                whaleAnimator = GetComponentInChildren<Animator>();
+            }
+
+            if (whaleAnimator == null)
+            {
+                Debug.LogWarning("No Animator component found on Player or its children!");
+            }
+        }
     }
 
     private void Update()
@@ -79,6 +98,15 @@ public class Player : MonoBehaviour
         {
             //Debug.Log("Arching!");
             inputVector.x = -1f;
+
+            // Play arch back sound when A is pressed
+            if (audioSource && archBackSound)
+            {
+                audioSource.PlayOneShot(archBackSound);
+            }
+
+            // Trigger arch back animation when A is pressed
+            TriggerArchBackAnimation();
         }
         if (Input.GetKey(KeyCode.W))
         {
@@ -89,6 +117,12 @@ public class Player : MonoBehaviour
             if (!w_pressed_last_frame && audioSource && wiggleSound)
             {
                 audioSource.PlayOneShot(wiggleSound);
+            }
+
+            // Trigger side wiggle animation when W is first pressed (not held)
+            if (!w_pressed_last_frame)
+            {
+                TriggerSideWiggleAnimation();
             }
 
             Vector3 baseMovement = new Vector3(-2.0f, 0f, 0f) * moveSpeed * Time.deltaTime;
@@ -145,6 +179,12 @@ public class Player : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.S) && audioSource && splashSound)
             {
                 audioSource.PlayOneShot(splashSound);
+            }
+
+            // Trigger tail splash animation when S is first pressed (for splashing)
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                TriggerTailSplashAnimation();
             }
 
             --temperature;
@@ -262,5 +302,114 @@ public class Player : MonoBehaviour
         hasWon = true;
         SceneManager.LoadScene("PersistentUI");
         Debug.Log("Player Wins! Whale is fully submerged!");
+    }
+
+    // Animation trigger methods from QTE script
+    private void TriggerArchBackAnimation()
+    {
+        if (whaleAnimator == null)
+        {
+            Debug.LogWarning("whaleAnimator is null! Cannot trigger ArchBack animation.");
+            return;
+        }
+
+        if (whaleAnimator.runtimeAnimatorController == null)
+        {
+            Debug.LogWarning("No Animator Controller assigned to whale!");
+            return;
+        }
+
+        // Check if parameter exists
+        bool hasParameter = false;
+        foreach (AnimatorControllerParameter param in whaleAnimator.parameters)
+        {
+            if (param.name == "DoArchBack")
+            {
+                hasParameter = true;
+                break;
+            }
+        }
+
+        if (!hasParameter)
+        {
+            Debug.LogWarning("DoArchBack parameter not found in animator controller!");
+            return;
+        }
+
+        // Set the trigger
+        whaleAnimator.SetTrigger("DoArchBack");
+        Debug.Log("ArchBack animation triggered");
+    }
+
+    private void TriggerSideWiggleAnimation()
+    {
+        if (whaleAnimator == null)
+        {
+            Debug.LogWarning("whaleAnimator is null! Cannot trigger SideWiggle animation.");
+            return;
+        }
+
+        if (whaleAnimator.runtimeAnimatorController == null)
+        {
+            Debug.LogWarning("No Animator Controller assigned to whale!");
+            return;
+        }
+
+        // Check if parameter exists
+        bool hasParameter = false;
+        foreach (AnimatorControllerParameter param in whaleAnimator.parameters)
+        {
+            if (param.name == "DoSideWiggle")
+            {
+                hasParameter = true;
+                break;
+            }
+        }
+
+        if (!hasParameter)
+        {
+            Debug.LogWarning("DoSideWiggle parameter not found in animator controller!");
+            return;
+        }
+
+        // Set the trigger
+        whaleAnimator.SetTrigger("DoSideWiggle");
+        Debug.Log("SideWiggle animation triggered");
+    }
+
+    private void TriggerTailSplashAnimation()
+    {
+        if (whaleAnimator == null)
+        {
+            Debug.LogWarning("whaleAnimator is null! Cannot trigger TailSplash animation.");
+            return;
+        }
+
+        if (whaleAnimator.runtimeAnimatorController == null)
+        {
+            Debug.LogWarning("No Animator Controller assigned to whale!");
+            return;
+        }
+
+        // Check if parameter exists
+        bool hasParameter = false;
+        foreach (AnimatorControllerParameter param in whaleAnimator.parameters)
+        {
+            if (param.name == "DoTailSplash")
+            {
+                hasParameter = true;
+                break;
+            }
+        }
+
+        if (!hasParameter)
+        {
+            Debug.LogWarning("DoTailSplash parameter not found in animator controller!");
+            return;
+        }
+
+        // Set the trigger
+        whaleAnimator.SetTrigger("DoTailSplash");
+        Debug.Log("TailSplash animation triggered");
     }
 }

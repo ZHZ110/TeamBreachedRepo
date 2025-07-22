@@ -7192,6 +7192,7 @@ GameObject:
   - component: {fileID: 1445818336}
   - component: {fileID: 1445818335}
   - component: {fileID: 1445818337}
+  - component: {fileID: 1445818338}
   m_Layer: 0
   m_Name: player_orca
   m_TagString: Untagged
@@ -7218,7 +7219,9 @@ MonoBehaviour:
   beachWaveController: {fileID: 82788649}
   audioSource: {fileID: 1445818337}
   wiggleSound: {fileID: 8300000, guid: 444ff779c93b90a4bae7880414c73309, type: 3}
-  splashSound: {fileID: 0}
+  splashSound: {fileID: 8300000, guid: 0bf12d3662fba9a4fba29d88e1ea9dbe, type: 3}
+  archBackSound: {fileID: 8300000, guid: d2ae2b012fdb3d64980e8636401b811e, type: 3}
+  whaleAnimator: {fileID: 0}
 --- !u!4 &1445818336
 Transform:
   m_ObjectHideFlags: 0
@@ -7333,6 +7336,28 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!95 &1445818338
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1445818334}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 36436de09e174f748be04f38d8b75727, type: 3}
+  m_Controller: {fileID: 9100000, guid: 8319a543f9d9d704285af121f50fbed4, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1783599173 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 531430114226741149, guid: 8265f389601f36d46af02dea125c089f, type: 3}
